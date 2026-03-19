@@ -11,10 +11,9 @@ VERSION = "1.0.1"
 
 def show_about_dialog():
     plugin_dir = os.path.dirname(__file__)
-    # Find logo in the other button folder (standard practice in pyRevit suites)
-    # Riyan.tab/Link Tools.panel/Copy from Link.pushbutton/logo.png
+    # Corrected logo path: Coordination.panel/Copy from Link.pushbutton/logo.png
     logo_path = os.path.join(os.path.dirname(os.path.dirname(plugin_dir)), 
-                             "Link Tools.panel", 
+                             "Coordination.panel", 
                              "Copy from Link.pushbutton", 
                              "logo.png")
 
@@ -23,7 +22,7 @@ def show_about_dialog():
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="About Riyan Plugin"
-        Width="450" Height="420"
+        Width="450" Height="480"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         FontFamily="Segoe UI"
@@ -37,10 +36,10 @@ def show_about_dialog():
             </Grid.RowDefinitions>
 
             <!-- Header bar -->
-            <Border Grid.Row="0" Background="#111111" BorderBrush="#7B2C2C" BorderThickness="0,0,0,2" Padding="20,15">
+            <Border Grid.Row="0" Background="#111111" BorderBrush="#7B2C2C" BorderThickness="0,0,0,2" Padding="20,10">
                 <StackPanel HorizontalAlignment="Center">
-                    <Image x:Name="BigLogo" Height="100" Width="180" 
-                           Margin="0,0,0,10"
+                    <Image x:Name="BigLogo" Height="80" Width="180" 
+                           Margin="0,0,0,5"
                            RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock Text="Riyan Revit Plugin Suite"
                                FontSize="20" FontWeight="Bold"
@@ -60,7 +59,7 @@ def show_about_dialog():
                 <Border BorderBrush="#222222" BorderThickness="0,0,0,1" Margin="0,0,0,15" Padding="0,0,0,10">
                     <Grid>
                         <TextBlock Text="Developer" Foreground="#888888" HorizontalAlignment="Left"/>
-                        <TextBlock Text="Udarie Imalsha" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right"/>
+                        <TextBlock Text="Udarie &amp; Chalana" Foreground="White" FontWeight="Bold" HorizontalAlignment="Right"/>
                     </Grid>
                 </Border>
 
