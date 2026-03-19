@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import System
+import subprocess
 from pyrevit import forms
 from System.Windows.Markup import XamlReader
 from System.Windows.Media.Imaging import BitmapImage
@@ -66,6 +67,16 @@ def show_about_dialog():
                 <TextBlock Text="Professional Revit automation tools for link management and coordination." 
                            Foreground="#A0A0A0" TextWrapping="Wrap" Margin="0,0,0,25" TextAlignment="Center" FontStyle="Italic"/>
 
+                <Button x:Name="UpdateBtn" Content="Check for Updates" Margin="0,0,0,10" Cursor="Hand">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="Transparent" BorderBrush="#7B2C2C" BorderThickness="1" CornerRadius="5" Padding="10">
+                                <TextBlock Text="{TemplateBinding Content}" Foreground="#7B2C2C" HorizontalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
                 <Button x:Name="RepoBtn" Content="Visit GitHub Repository" Margin="0,0,0,10" Cursor="Hand">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
@@ -110,6 +121,30 @@ def show_about_dialog():
         import webbrowser
         webbrowser.open("https://github.com/udarieimalsha/Riyan.extension")
     repo_btn.Click += on_repo
+
+    update_btn = window.FindName("UpdateBtn")
+    def on_update(sender, args):
+        try:
+            # Run git pull in the plugin directory
+            process = subprocess.Popen(['git', 'pull', 'origin', 'main'], 
+                                     cwd=plugin_dir,
+                                     stdout=subprocess.PIPE, 
+                                     stderr=subprocess.PIPE,
+                                     shell=True)
+            stdout, stderr = process.communicate()
+            
+            if process.returncode == 0:
+                if "Already up to date" in stdout:
+                    forms.alert("Your plugin is already up to date!", title="Update Check")
+                else:
+                    forms.alert("Successfully updated to the latest version!\n\nPlease Reload pyRevit to apply changes.", 
+                                title="Update Success")
+            else:
+                forms.alert("Failed to update: " + stderr, title="Update Error")
+        except Exception as e:
+            forms.alert("Error running update: " + str(e), title="Update Error")
+            
+    update_btn.Click += on_update
 
     window.ShowDialog()
 
