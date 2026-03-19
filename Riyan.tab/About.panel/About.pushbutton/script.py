@@ -108,7 +108,7 @@ def show_about_dialog():
     repo_btn = window.FindName("RepoBtn")
     def on_repo(sender, args):
         import webbrowser
-        webbrowser.open("https://github.com/udarieimalsha/TestRiyanPlugin")
+        webbrowser.open("https://github.com/udarieimalsha/Riyan")
     repo_btn.Click += on_repo
 
     window.ShowDialog()
