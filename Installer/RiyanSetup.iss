@@ -1,7 +1,7 @@
 [Setup]
 AppId={{5d17a437-4553-4a2e-80fa-cc207f37982c}
 AppName=Riyan Revit Tools
-AppVersion=1.0.3
+AppVersion=1.0.4
 AppPublisher=Riyan
 AppPublisherURL=https://github.com/udarieimalsha/Riyan.extension
 AppSupportURL=https://github.com/udarieimalsha/Riyan.extension
@@ -10,7 +10,7 @@ DefaultDirName={userappdata}\pyRevit\Extensions\Riyan.extension
 DefaultGroupName=Riyan Revit Tools
 AllowNoIcons=yes
 OutputDir=..
-OutputBaseFilename=RiyanSetup_v1.0.3
+OutputBaseFilename=RiyanSetup_v1.0.4
 ; SetupIconFile=..\Riyan.tab\About.panel\About.pushbutton\icon.png
 Compression=lzma2
 SolidCompression=yes
@@ -24,7 +24,7 @@ PrivilegesRequired=lowest
 ; Version Info for Windows Properties
 VersionInfoCompany=Riyan
 VersionInfoDescription=Riyan Revit Tools Installer
-VersionInfoVersion=1.0.3
+VersionInfoVersion=1.0.4
 VersionInfoCopyright=Copyright (C) 2026 Riyan
 
 [Languages]
@@ -34,6 +34,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 ; Copy all extension files except the installer itself and git metadata
 Source: "../*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; \
     Excludes: ".git\*,.gitignore,.gemini\*,Installer\*,*.md,*.exe,*.zip"
+
+[INI]
+Filename: "{app}\is_exe.flag"; Section: "Setup"; Key: "Type"; String: "EXE"
 
 [Icons]
 Name: "{group}\Uninstall Riyan Revit Tools"; Filename: "{uninstallexe}"

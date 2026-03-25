@@ -154,13 +154,16 @@ def run_exe_update_checker(extension_dir):
 def main():
     curr_dir = os.path.dirname(__file__)
     extension_dir = os.path.dirname(curr_dir)
-    git_dir = os.path.join(extension_dir, '.git')
+    exe_flag = os.path.join(extension_dir, 'is_exe.flag')
     
-    if os.path.exists(git_dir):
-        run_git_pull_update(extension_dir)
-    else:
-        # Check updates synchronously so the window can block Revit startup
+    if os.path.exists(exe_flag):
+        # Synchronous check so PyRevit doesn't kill the thread scope while UI is open
         run_exe_update_checker(extension_dir)
+    else:
+        # Background pull
+        import threading
+        t = threading.Thread(target=run_git_pull_update, args=(extension_dir,))
+        t.start()
 
 try:
     main()
