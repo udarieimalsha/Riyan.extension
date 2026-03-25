@@ -118,10 +118,8 @@ def show_updater_window(version, url):
         btn_update.Click += start_update
         window.ShowDialog()
         
-    import System.Threading as Threading
-    t = Threading.Thread(Threading.ThreadStart(thread_proc))
-    t.SetApartmentState(Threading.ApartmentState.STA)
-    t.Start()
+    # Run the window synchronously so PyRevit engine does not collect the scope
+    thread_proc()
 
 def run_exe_update_checker(extension_dir):
     try:
@@ -158,9 +156,8 @@ def main():
     if os.path.exists(git_dir):
         run_git_pull_update(extension_dir)
     else:
-        # Check updates in a background thread so Revit doesn't freeze
-        t = threading.Thread(target=run_exe_update_checker, args=(extension_dir,))
-        t.start()
+        # Check updates synchronously so the window can block Revit startup
+        run_exe_update_checker(extension_dir)
 
 try:
     main()
