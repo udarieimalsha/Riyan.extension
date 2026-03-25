@@ -112,7 +112,10 @@ def show_about_dialog():
                 
                 <!-- Update Status Area -->
                 <Border x:Name="StatusBorder" Background="#337B2C2C" BorderBrush="#7B2C2C" BorderThickness="1" CornerRadius="5" Padding="12" Margin="0,0,0,10" Visibility="Collapsed">
-                    <TextBlock x:Name="StatusText" Foreground="White" TextAlignment="Center" TextWrapping="Wrap" FontSize="14" FontWeight="SemiBold"/>
+                    <StackPanel>
+                        <TextBlock x:Name="StatusText" Foreground="White" TextAlignment="Center" TextWrapping="Wrap" FontSize="14" FontWeight="SemiBold"/>
+                        <ProgressBar x:Name="DownloadBar" Height="8" Margin="0,10,0,0" Foreground="#7B2C2C" Background="#222222" BorderThickness="0" Visibility="Collapsed"/>
+                    </StackPanel>
                 </Border>
 
                 <Button x:Name="CloseBtn" Content="Close" Background="#7B2C2C" Foreground="White" FontWeight="Bold"
@@ -179,29 +182,28 @@ def show_about_dialog():
     update_btn = window.FindName("UpdateBtn")
     status_border = window.FindName("StatusBorder")
     status_text = window.FindName("StatusText")
+    download_bar = window.FindName("DownloadBar")
 
     def on_update(sender, args):
         try:
             status_border.Visibility = System.Windows.Visibility.Collapsed
+            download_bar.Visibility = System.Windows.Visibility.Collapsed
             update_btn.IsEnabled = False
             update_btn.Content = "Checking..."
             
             # Force UI update
             from System.Windows.Threading import DispatcherPriority
-            from System.Windows import Visibility
             from System import Action
-            try:
-                window.Dispatcher.Invoke(DispatcherPriority.Background, Action(lambda: None))
-            except: pass
+            window.Dispatcher.Invoke(DispatcherPriority.Background, Action(lambda: None))
 
-            try:
-                Net.ServicePointManager.SecurityProtocol |= Net.SecurityProtocolType.Tls12
-            except: pass
+            Net.ServicePointManager.SecurityProtocol |= Net.SecurityProtocolType.Tls12
             
             client = WebClientWithTimeout()
             client.Headers.Add("Cache-Control", "no-cache")
             
-            url = "https://raw.githubusercontent.com/udarieimalsha/Riyan.extension/main/update.json"
+            # Use cache buster for more reliable checking
+            import time
+            url = "https://raw.githubusercontent.com/udarieimalsha/Riyan.extension/main/update.json?v=" + str(int(time.time()))
             json_str = client.DownloadString(url)
             data = json.loads(json_str)
             
@@ -214,11 +216,34 @@ def show_about_dialog():
             
             if v_to_tuple(remote_v) > v_to_tuple(VERSION):
                 update_btn.Content = "Update Available!"
-                res = forms.alert("A new version (%s) is available!\n\nWould you like to download it?" % remote_v, 
+                res = forms.alert("A new version (%s) is available!\n\nWould you like to install it now?" % remote_v, 
                                   title="Update Available", yes=True, no=True)
                 if res:
-                    webbrowser.open(dl_url)
-                    window.Close()
+                    # Direct Download Mode
+                    status_border.Visibility = System.Windows.Visibility.Visible
+                    download_bar.Visibility = System.Windows.Visibility.Visible
+                    status_text.Text = "Downloading v%s..." % remote_v
+                    
+                    temp_exe = os.path.join(os.environ["TEMP"], "RiyanSetup_Latest.exe")
+                    
+                    # Async Download for UI responsiveness
+                    def dl_progress(s, e):
+                        window.Dispatcher.Invoke(Action(lambda: setattr(download_bar, "Value", e.ProgressPercentage)))
+                    
+                    def dl_complete(s, e):
+                        if e.Error:
+                            window.Dispatcher.Invoke(Action(lambda: forms.alert("Download failed: " + str(e.Error))))
+                        else:
+                            # Run silent installer
+                            subprocess.Popen([temp_exe, "/SILENT", "/SUPPRESSMSGBOXES", "/NORESTART"])
+                            window.Dispatcher.Invoke(Action(window.Close))
+                            forms.alert("Update started! Extension will refresh automatically.", title="Riyan Update")
+                    
+                    dl_client = Net.WebClient()
+                    dl_client.DownloadProgressChanged += dl_progress
+                    dl_client.DownloadFileCompleted += dl_complete
+                    dl_client.DownloadFileAsync(Uri(dl_url), temp_exe)
+                    return # Exit so we don't reset button state yet
             else:
                 status_text.Text = "You are up to date! (v%s)" % VERSION
                 status_border.Visibility = System.Windows.Visibility.Visible
@@ -229,7 +254,8 @@ def show_about_dialog():
         finally:
             if update_btn.Content == "Checking...":
                 update_btn.Content = "Check for Updates"
-            update_btn.IsEnabled = True
+            if download_bar.Visibility != System.Windows.Visibility.Visible:
+                update_btn.IsEnabled = True
 
     update_btn.Click += on_update
 
