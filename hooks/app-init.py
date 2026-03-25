@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 Auto-updater script for Riyan.extension.
-Handles:
-- Git pull for developers (if .git folder exists)
-- Silent EXE update check for end-users
+Executed by pyRevit at startup.
 """
 
 import os
 import subprocess
+import threading
 import clr
 clr.AddReference('System')
 clr.AddReference('PresentationFramework')
@@ -18,12 +17,9 @@ def run_git_pull_update(extension_dir):
     try:
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        
         env = os.environ.copy()
-        
         # Stash local changes before pulling
         subprocess.call(["git", "stash"], cwd=extension_dir, startupinfo=startupinfo, env=env)
-        # Pull synchronously so changes are available IMMEDIATELY for PyRevit UI loading
         subprocess.call(["git", "pull"], cwd=extension_dir, startupinfo=startupinfo, env=env)
         subprocess.call(["git", "stash", "pop"], cwd=extension_dir, startupinfo=startupinfo, env=env)
     except:
@@ -103,7 +99,6 @@ def show_updater_window(version, url):
             def finish_dl():
                 window.Close()
                 import subprocess
-                # Seamless Silent Install
                 subprocess.Popen([temp_path, '/SILENT', '/SUPPRESSMSGBOXES', '/NORESTART'])
                 
             def on_complete(sender, ev):
@@ -157,14 +152,15 @@ def run_exe_update_checker(extension_dir):
         pass
 
 def main():
-    extension_dir = os.path.dirname(__file__)
+    # In hooks/app-init.py, __file__ is inside hooks folder
+    hooks_dir = os.path.dirname(__file__)
+    extension_dir = os.path.dirname(hooks_dir)
     git_dir = os.path.join(extension_dir, '.git')
     
     if not os.path.exists(git_dir):
         run_exe_update_checker(extension_dir)
     else:
-        # Run synchronously. PyRevit waits for this to finish before gathering tools.
-        # This guarantees the user sees the newest UI changes immediately!
+        # Run git pull synchronously for devs
         run_git_pull_update(extension_dir)
 
 if __name__ == '__main__':
