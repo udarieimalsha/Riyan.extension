@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-<<<<<<< Updated upstream
 """
 Auto-updater script for Riyan.extension.
 Handles:
@@ -9,27 +8,24 @@ Handles:
 
 import os
 import subprocess
-import threading
 import clr
 clr.AddReference('System')
 clr.AddReference('PresentationFramework')
 clr.AddReference('PresentationCore')
 clr.AddReference('WindowsBase')
-=======
-import os
-import subprocess
-import datetime
-import traceback
->>>>>>> Stashed changes
 
 def run_git_pull_update(extension_dir):
     try:
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        
+        env = os.environ.copy()
+        
         # Stash local changes before pulling
-        subprocess.call(["git", "stash"], cwd=extension_dir, startupinfo=startupinfo)
-        subprocess.call(["git", "pull"], cwd=extension_dir, startupinfo=startupinfo)
-        subprocess.call(["git", "stash", "pop"], cwd=extension_dir, startupinfo=startupinfo)
+        subprocess.call(["git", "stash"], cwd=extension_dir, startupinfo=startupinfo, env=env)
+        # Pull synchronously so changes are available IMMEDIATELY for PyRevit UI loading
+        subprocess.call(["git", "pull"], cwd=extension_dir, startupinfo=startupinfo, env=env)
+        subprocess.call(["git", "stash", "pop"], cwd=extension_dir, startupinfo=startupinfo, env=env)
     except:
         pass
 
@@ -163,54 +159,13 @@ def run_exe_update_checker(extension_dir):
 def main():
     extension_dir = os.path.dirname(__file__)
     git_dir = os.path.join(extension_dir, '.git')
-    log_file = os.path.join(extension_dir, 'update_log.txt')
     
-<<<<<<< Updated upstream
     if not os.path.exists(git_dir):
         run_exe_update_checker(extension_dir)
     else:
-        # For developers, just do a silent pull in background
-        import threading
-        t = threading.Thread(target=run_git_pull_update, args=(extension_dir,))
-        t.start()
+        # Run synchronously. PyRevit waits for this to finish before gathering tools.
+        # This guarantees the user sees the newest UI changes immediately!
+        run_git_pull_update(extension_dir)
 
 if __name__ == '__main__':
     main()
-=======
-    with open(log_file, "a") as f:
-        f.write("\n\n--- Update triggered at {} ---\n".format(datetime.datetime.now()))
-        
-        if not os.path.exists(git_dir):
-            f.write("No .git folder found. Aborting.\n")
-            return
-            
-        try:
-            startupinfo = subprocess.STARTUPINFO()
-            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            
-            # Setup environment variables to ensure git finds its path correctly
-            envs = os.environ.copy()
-            
-            f.write("Running git stash...\n")
-            p1 = subprocess.Popen(["git", "stash"], cwd=extension_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo, env=envs)
-            out1, err1 = p1.communicate()
-            f.write("Stash Output:\n{}\nError:\n{}\n".format(out1, err1))
-            
-            f.write("Running git pull...\n")
-            p2 = subprocess.Popen(["git", "pull"], cwd=extension_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo, env=envs)
-            out2, err2 = p2.communicate()
-            f.write("Pull Output:\n{}\nError:\n{}\n".format(out2, err2))
-            
-            f.write("Running git stash pop...\n")
-            p3 = subprocess.Popen(["git", "stash", "pop"], cwd=extension_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo, env=envs)
-            out3, err3 = p3.communicate()
-            f.write("Pop Output:\n{}\nError:\n{}\n".format(out3, err3))
-            
-        except Exception as e:
-            f.write("Exception occurred:\n{}\n".format(traceback.format_exc()))
-
-try:
-    run_auto_update()
-except Exception as e:
-    pass
->>>>>>> Stashed changes
