@@ -270,29 +270,27 @@ def show_about_dialog():
                         if e.Error:
                             window.Dispatcher.Invoke(Action(lambda: forms.alert("Download failed: " + str(e.Error))))
                         else:
-                            # Write a waiter script - runs installer AFTER Revit closes
+                            # Use PowerShell to wait for Revit and then run installer
                             try:
-                                waiter_path = os.path.join(os.environ.get("TEMP", "C:\\Temp"), "RiyanUpdater.bat")
-                                bat_content = (
-                                    "@echo off\r\n"
-                                    ":waitloop\r\n"
-                                    "tasklist /FI \"IMAGENAME eq Revit.exe\" 2>NUL | find /I \"Revit.exe\" >NUL\r\n"
-                                    "if not errorlevel 1 (\r\n"
-                                    "    timeout /t 2 /nobreak >NUL\r\n"
-                                    "    goto waitloop\r\n"
-                                    ")\r\n"
-                                    "start \"\" \"" + temp_exe + "\" /SILENT /SUPPRESSMSGBOXES /NORESTART\r\n"
-                                )
-                                with open(waiter_path, 'w') as f:
-                                    f.write(bat_content)
+                                ps_cmd = (
+                                    "powershell -Command \"while (Get-Process Revit -ErrorAction SilentlyContinue) "
+                                    "{ Start-Sleep -Seconds 2 }; "
+                                    "Start-Process '{0}' -ArgumentList '/SILENT','/SUPPRESSMSGBOXES','/NORESTART'\""
+                                ).format(temp_exe)
+                                
+                                import subprocess
                                 si = subprocess.STARTUPINFO()
                                 si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-                                si.wShowWindow = 0
-                                subprocess.Popen(["cmd", "/c", waiter_path], startupinfo=si, close_fds=True)
+                                si.wShowWindow = 0 # SW_HIDE
+                                subprocess.Popen(ps_cmd, startupinfo=si)
+                                
+                                from System import Action
                                 window.Dispatcher.Invoke(Action(window.Close))
-                                forms.alert("Update downloaded! It will install automatically when you close Revit.", title="Riyan Update")
+                                forms.alert("Update downloaded! It will install automatically as soon as you close Revit.", title="Riyan Update")
                             except Exception as ex:
-                                forms.alert("Ready to install. Please run manually:\n" + temp_exe, title="Riyan Update")
+                                from System import Action
+                                window.Dispatcher.Invoke(Action(window.Close))
+                                forms.alert("Ready to install. Please close Revit and run manually:\n" + temp_exe, title="Riyan Update")
                     
                     dl_client = Net.WebClient()
                     dl_client.DownloadProgressChanged += dl_progress
