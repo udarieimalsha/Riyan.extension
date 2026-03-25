@@ -234,10 +234,18 @@ def show_about_dialog():
                         if e.Error:
                             window.Dispatcher.Invoke(Action(lambda: forms.alert("Download failed: " + str(e.Error))))
                         else:
-                            # Run silent installer
-                            subprocess.Popen([temp_exe, "/SILENT", "/SUPPRESSMSGBOXES", "/NORESTART"])
+                            # Run silent installer natively
+                            try:
+                                import System.Diagnostics as Diagnostics
+                                from System.Diagnostics import Process, ProcessStartInfo
+                                psi = ProcessStartInfo(temp_exe)
+                                psi.Arguments = "/SILENT /SUPPRESSMSGBOXES /NORESTART"
+                                Process.Start(psi)
+                            except:
+                                subprocess.Popen([temp_exe, "/SILENT", "/SUPPRESSMSGBOXES", "/NORESTART"])
+                            
                             window.Dispatcher.Invoke(Action(window.Close))
-                            forms.alert("Update started! Extension will refresh automatically.", title="Riyan Update")
+                            forms.alert("Update downloaded! The installer is starting. Please close Revit to complete the update.", title="Riyan Update")
                     
                     dl_client = Net.WebClient()
                     dl_client.DownloadProgressChanged += dl_progress

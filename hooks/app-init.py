@@ -98,8 +98,15 @@ def show_updater_window(version, url):
                 
             def finish_dl():
                 window.Close()
-                import subprocess
-                subprocess.Popen([temp_path, '/SILENT', '/SUPPRESSMSGBOXES', '/NORESTART'])
+                try:
+                    import System.Diagnostics as Diagnostics
+                    from System.Diagnostics import Process, ProcessStartInfo
+                    psi = ProcessStartInfo(temp_path)
+                    psi.Arguments = "/SILENT /SUPPRESSMSGBOXES /NORESTART"
+                    Process.Start(psi)
+                except Exception as e:
+                    import subprocess
+                    subprocess.Popen([temp_path, '/SILENT', '/SUPPRESSMSGBOXES', '/NORESTART'])
                 
             def on_complete(sender, ev):
                 if ev.Error is None and not ev.Cancelled:
