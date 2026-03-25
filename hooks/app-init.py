@@ -146,7 +146,10 @@ def run_exe_update_checker(extension_dir):
         if v_to_tuple(remote_v) > v_to_tuple(local_v):
             show_updater_window(remote_v, dl_url)
     except Exception as e:
-        pass # Silently fail on network error
+        import clr
+        clr.AddReference('System.Windows.Forms')
+        import System.Windows.Forms as Forms
+        Forms.MessageBox.Show("Network/Update Error: " + str(e))
 
 def main():
     curr_dir = os.path.dirname(__file__)
