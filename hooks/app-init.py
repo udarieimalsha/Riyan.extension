@@ -99,14 +99,38 @@ def show_updater_window(version, url):
             def finish_dl():
                 window.Close()
                 try:
-                    import System.Diagnostics as Diagnostics
-                    from System.Diagnostics import Process, ProcessStartInfo
-                    psi = ProcessStartInfo(temp_path)
-                    psi.Arguments = "/SILENT /SUPPRESSMSGBOXES /NORESTART"
-                    Process.Start(psi)
-                except Exception as e:
+                    # Write a batch script that waits for Revit to close, THEN runs the installer
+                    waiter_path = os.path.join(os.environ.get("TEMP", "C:\\Temp"), "RiyanUpdater.bat")
+                    bat_content = (
+                        "@echo off\r\n"
+                        ":waitloop\r\n"
+                        "tasklist /FI \"IMAGENAME eq Revit.exe\" 2>NUL | find /I \"Revit.exe\" >NUL\r\n"
+                        "if not errorlevel 1 (\r\n"
+                        "    timeout /t 2 /nobreak >NUL\r\n"
+                        "    goto waitloop\r\n"
+                        ")\r\n"
+                        "start \"\" \"" + temp_path + "\" /SILENT /SUPPRESSMSGBOXES /NORESTART\r\n"
+                    )
+                    with open(waiter_path, 'w') as f:
+                        f.write(bat_content)
                     import subprocess
-                    subprocess.Popen([temp_path, '/SILENT', '/SUPPRESSMSGBOXES', '/NORESTART'])
+                    startupinfo = subprocess.STARTUPINFO()
+                    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                    startupinfo.wShowWindow = 0  # SW_HIDE
+                    subprocess.Popen(
+                        ["cmd", "/c", waiter_path],
+                        startupinfo=startupinfo,
+                        close_fds=True
+                    )
+                    from pyrevit import forms
+                    forms.alert(
+                        "Update downloaded! It will install automatically when you close Revit.",
+                        title="Riyan Update"
+                    )
+                except Exception as ex:
+                    from pyrevit import forms
+                    forms.alert("Update ready but auto-launch failed: " + str(ex) +
+                                "\nPlease run manually: " + temp_path, title="Riyan Update")
                 
             def on_complete(sender, ev):
                 if ev.Error is None and not ev.Cancelled:
