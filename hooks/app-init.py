@@ -36,7 +36,7 @@ def show_updater_window(version, url):
         from System.Windows.Markup import XamlReader
         from System import Uri
         import System.Net as Net
-        
+        import System.ComponentModel
         XAML = """
         <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -112,8 +112,8 @@ def show_updater_window(version, url):
                 else:
                     window.Dispatcher.Invoke(Action(window.Close))
                     
-            client.DownloadProgressChanged += Net.DownloadProgressChangedEventHandler(on_progress)
-            client.DownloadFileCompleted += Net.ComponentModel.AsyncCompletedEventHandler(on_complete)
+            client.DownloadProgressChanged += on_progress
+            client.DownloadFileCompleted += on_complete
             
         btn_update.Click += start_update
         window.ShowDialog()
@@ -143,11 +143,7 @@ def run_exe_update_checker(extension_dir):
         dl_url = data.get("download_url", "")
         if not remote_v or not dl_url: return
         
-        # DEBUG: Tell us exactly what's happening
-        import clr
-        clr.AddReference('System.Windows.Forms')
-        import System.Windows.Forms as Forms
-        Forms.MessageBox.Show("Riyan Updater: Checking Versions...\nLocal: " + str(local_v) + "\nRemote: " + str(remote_v))
+        # Remove the debug message for production
         
         def v_to_tuple(v): return tuple(map(int, v.split('.')))
         

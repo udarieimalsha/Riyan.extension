@@ -9,9 +9,14 @@ Write-Host "--- Riyan Revit Tools Installer Builder ---" -ForegroundColor Cyan
 # 1. Check for Inno Setup
 $iscc = Get-Command iscc -ErrorAction SilentlyContinue
 if (-not $iscc) {
-    Write-Host "Inno Setup not found. Attempting to install via winget..." -ForegroundColor Yellow
-    winget install -e --id JRSoftware.InnoSetup
-    $iscc = Get-Command iscc -ErrorAction SilentlyContinue
+    $localPath = "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
+    if (Test-Path $localPath) {
+        $iscc = [PSCustomObject]@{ Source = $localPath }
+    } else {
+        Write-Host "Inno Setup not found. Attempting to install via winget..." -ForegroundColor Yellow
+        winget install -e --id JRSoftware.InnoSetup
+        $iscc = Get-Command iscc -ErrorAction SilentlyContinue
+    }
 }
 
 if (-not $iscc) {
