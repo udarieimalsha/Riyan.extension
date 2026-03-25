@@ -138,31 +138,39 @@ def show_about_dialog():
     close_btn.Click += lambda s, e: window.Close()
 
     def show_branded_message(title, message):
-        msg_xaml = """
-        <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                Title="{title}" Width="300" Height="160" 
-                WindowStartupLocation="CenterScreen" WindowStyle="None" 
-                AllowsTransparency="True" Background="Transparent" Topmost="True">
-            <Border Background="#111111" BorderBrush="#7B2C2C" BorderThickness="2" CornerRadius="10">
-                <StackPanel VerticalAlignment="Center" Margin="20">
-                    <TextBlock Text="{title}" Foreground="#7B2C2C" FontWeight="Bold" FontSize="14" Margin="0,0,0,10" HorizontalAlignment="Center"/>
-                    <TextBlock Text="{message}" Foreground="White" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
-                    <Button x:Name="OkBtn" Content="OK" Margin="0,15,0,0" Width="60" Height="25" Background="#7B2C2C" Foreground="White" BorderThickness="0" Cursor="Hand">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}" CornerRadius="12">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
-                </StackPanel>
-            </Border>
-        </Window>
-        """.replace("{title}", title).replace("{message}", message)
-        msg_win = XamlReader.Parse(msg_xaml)
-        msg_win.FindName("OkBtn").Click += lambda s, e: msg_win.Close()
-        msg_win.ShowDialog()
+        try:
+            # Escape strings for XML to prevent Xaml parsing errors
+            import cgi
+            safe_title = cgi.escape(str(title))
+            safe_message = cgi.escape(str(message))
+            
+            msg_xaml = """
+            <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    Title="{title}" Width="350" Height="180" 
+                    WindowStartupLocation="CenterScreen" Background="#111111" Topmost="True">
+                <Border BorderBrush="#7B2C2C" BorderThickness="2">
+                    <StackPanel VerticalAlignment="Center" Margin="20">
+                        <TextBlock Text="{title}" Foreground="#7B2C2C" FontWeight="Bold" FontSize="16" Margin="0,0,0,10" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{message}" Foreground="White" FontSize="14" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
+                        <Button x:Name="OkBtn" Content="OK" Margin="0,20,0,0" Width="80" Height="30" Background="#7B2C2C" Foreground="White" FontWeight="Bold" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="15">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </Window>
+            """.replace("{title}", safe_title).replace("{message}", safe_message)
+            msg_win = XamlReader.Parse(msg_xaml)
+            msg_win.FindName("OkBtn").Click += lambda s, e: msg_win.Close()
+            msg_win.ShowDialog()
+        except Exception as e:
+            # Fallback to standard alert if custom XAML fails
+            forms.alert(str(message), title=str(title))
 
     update_btn = window.FindName("UpdateBtn")
 
@@ -171,10 +179,12 @@ def show_about_dialog():
             update_btn.IsEnabled = False
             update_btn.Content = "Checking..."
             
-            # Force UI update (Synchronous status change)
+            # Use Dispatcher to force UI update so "Checking..." is seen
             from System.Windows.Threading import DispatcherPriority
             from System import Action
-            window.Dispatcher.Invoke(DispatcherPriority.Background, Action(lambda: None))
+            try:
+                window.Dispatcher.Invoke(DispatcherPriority.Background, Action(lambda: None))
+            except: pass
 
             try:
                 Net.ServicePointManager.SecurityProtocol |= Net.SecurityProtocolType.Tls12
@@ -190,7 +200,9 @@ def show_about_dialog():
             remote_v = data.get("version", "")
             dl_url = data.get("download_url", "")
             
-            def v_to_tuple(v): return tuple(map(int, str(v).split('.')))
+            def v_to_tuple(v): 
+                try: return tuple(map(int, str(v).split('.')))
+                except: return (0,0,0)
             
             if v_to_tuple(remote_v) > v_to_tuple(VERSION):
                 res = forms.alert("A new version (%s) is available!\n\nWould you like to download it?" % remote_v, 
@@ -199,10 +211,10 @@ def show_about_dialog():
                     webbrowser.open(dl_url)
                     window.Close()
             else:
-                show_branded_message("Riyan Tool", "You are up to date!\n(v%s)" % VERSION)
+                forms.alert("You are up to date! (v%s)" % VERSION, title="Riyan Tool", warn_icon=False)
                 
         except Exception as e:
-            show_branded_message("Update Error", str(e))
+            forms.alert("Update Check Failed: " + str(e), title="Error")
         finally:
             update_btn.Content = "Check for Updates"
             update_btn.IsEnabled = True
