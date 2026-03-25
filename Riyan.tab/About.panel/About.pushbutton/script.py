@@ -88,10 +88,10 @@ def show_about_dialog():
                 <TextBlock Text="Professional Revit automation tools for link management and coordination." 
                            Foreground="#A0A0A0" TextWrapping="Wrap" Margin="0,0,0,25" TextAlignment="Center" FontStyle="Italic"/>
 
-                <Button x:Name="UpdateBtn" Content="Check for Updates" Margin="0,0,0,10" Cursor="Hand">
+                <Button x:Name="UpdateBtn" Content="Check for Updates" Margin="0,0,0,10" Cursor="Hand" Background="#01000000">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
-                            <Border Background="Transparent" BorderBrush="#7B2C2C" BorderThickness="1" CornerRadius="5" Padding="10">
+                            <Border Background="{TemplateBinding Background}" BorderBrush="#7B2C2C" BorderThickness="1" CornerRadius="5" Padding="10">
                                 <TextBlock Text="{TemplateBinding Content}" Foreground="White" HorizontalAlignment="Center"/>
                             </Border>
                         </ControlTemplate>
@@ -123,11 +123,8 @@ def show_about_dialog():
     
     # Setup Buttons
     close_btn = window.FindName("CloseBtn")
-    def on_close(sender, args):
-        window.Close()
-    close_btn.Click += on_close
+    close_btn.Click += lambda s, e: window.Close()
 
-    update_btn = window.FindName("UpdateBtn")
     def show_branded_message(title, message):
         msg_xaml = """
         <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -162,7 +159,6 @@ def show_about_dialog():
             from System.Net import WebClient
             client = WebClient()
             client.Headers.Add("Cache-Control", "no-cache")
-            
             try:
                 from System.Net import ServicePointManager, SecurityProtocolType
                 ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12
@@ -173,13 +169,11 @@ def show_about_dialog():
             json_str = client.DownloadString(url)
             import json
             data = json.loads(json_str)
-            
             remote_v = data.get("version", "")
             dl_url = data.get("download_url", "")
             local_v = VERSION
             
             def v_to_tuple(v): return tuple(map(int, v.split('.')))
-            
             if v_to_tuple(remote_v) > v_to_tuple(local_v):
                 res = forms.alert("A new version (%s) is available!\n\nWould you like to download it?" % remote_v, 
                                   title="Update Available", yes=True, no=True)
