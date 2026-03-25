@@ -427,24 +427,25 @@ def run():
                 if res["mode"] == "Survey Point":
                     # Use shared coordinate system
                     pos = proj_loc.GetProjectPosition(xyz)
-                    factor = 304.8 if "Millimeters" in res["unit"] else 0.3048
-                    fx, fy, fz = pos.EastWest * factor, pos.NorthSouth * factor, pos.Elevation * factor
+                    raw_x, raw_y, raw_z = pos.EastWest, pos.NorthSouth, pos.Elevation
                 else:
                     # Use internal project base point
                     pbp = DB.BasePoint.GetProjectBasePoint(doc)
                     pbp_pt = pbp.get_BoundingBox(None).Max
-                    vx, vy, vz = xyz.X - pbp_pt.X, xyz.Y - pbp_pt.Y, xyz.Z - pbp_pt.Z
-                    factor = 304.8 if "Millimeters" in res["unit"] else 0.3048
-                    fx, fy, fz = vx * factor, vy * factor, vz * factor
+                    raw_x, raw_y, raw_z = xyz.X - pbp_pt.X, xyz.Y - pbp_pt.Y, xyz.Z - pbp_pt.Z
                 
                 fmt = "{:.3f}"
+                factor = 304.8 if "Millimeters" in res["unit"] else 0.3048
+                
                 # Apply values
                 updated = False
-                for p_name, val in zip(PARAMETER_NAMES, [fx, fy, fz]):
+                for p_name, raw_val in zip(PARAMETER_NAMES, [raw_x, raw_y, raw_z]):
                     p = el.LookupParameter(p_name)
                     if p:
-                        if p.StorageType == DB.StorageType.String: p.Set(fmt.format(val))
-                        else: p.Set(val)
+                        if p.StorageType == DB.StorageType.String:
+                            p.Set(fmt.format(raw_val * factor))
+                        else:
+                            p.Set(raw_val) # Double/Length handles conversion native
                         updated = True
                 if updated: updated_ids.add(el.Id)
     
