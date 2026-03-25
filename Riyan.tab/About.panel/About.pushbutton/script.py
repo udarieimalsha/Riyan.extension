@@ -109,6 +109,11 @@ def show_about_dialog():
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
+                
+                <!-- Update Status Area -->
+                <Border x:Name="StatusBorder" Background="#227B2C2C" BorderBrush="#7B2C2C" BorderThickness="1" CornerRadius="5" Padding="10" Margin="0,5,0,0" Visibility="Collapsed">
+                    <TextBlock x:Name="StatusText" Foreground="White" TextAlignment="Center" TextWrapping="Wrap" FontSize="13"/>
+                </Border>
 
                 <Button x:Name="CloseBtn" Content="Close" Background="#7B2C2C" Foreground="White" FontWeight="Bold"
                         Padding="15,8" HorizontalAlignment="Center" Margin="0,20,0,0" Cursor="Hand">
@@ -172,14 +177,18 @@ def show_about_dialog():
             forms.alert(str(message), title=str(title))
 
     update_btn = window.FindName("UpdateBtn")
+    status_border = window.FindName("StatusBorder")
+    status_text = window.FindName("StatusText")
 
     def on_update(sender, args):
         try:
+            status_border.Visibility = System.Windows.Visibility.Collapsed
             update_btn.IsEnabled = False
             update_btn.Content = "Checking..."
             
-            # Use Dispatcher to force UI update so "Checking..." is seen
+            # Force UI update
             from System.Windows.Threading import DispatcherPriority
+            from System.Windows import Visibility
             from System import Action
             try:
                 window.Dispatcher.Invoke(DispatcherPriority.Background, Action(lambda: None))
@@ -204,18 +213,22 @@ def show_about_dialog():
                 except: return (0,0,0)
             
             if v_to_tuple(remote_v) > v_to_tuple(VERSION):
+                update_btn.Content = "Update Available!"
                 res = forms.alert("A new version (%s) is available!\n\nWould you like to download it?" % remote_v, 
                                   title="Update Available", yes=True, no=True)
                 if res:
                     webbrowser.open(dl_url)
                     window.Close()
             else:
-                show_branded_message("Riyan Tool", "You are up to date!\n(v%s)" % VERSION)
+                status_text.Text = "You are up to date! (v%s)" % VERSION
+                status_border.Visibility = System.Windows.Visibility.Visible
                 
         except Exception as e:
-            forms.alert("Update Check Failed: " + str(e), title="Error")
+            status_text.Text = "Check Failed: " + str(e)
+            status_border.Visibility = System.Windows.Visibility.Visible
         finally:
-            update_btn.Content = "Check for Updates"
+            if update_btn.Content == "Checking...":
+                update_btn.Content = "Check for Updates"
             update_btn.IsEnabled = True
 
     update_btn.Click += on_update
