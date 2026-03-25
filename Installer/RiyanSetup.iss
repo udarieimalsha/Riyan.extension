@@ -1,7 +1,7 @@
 [Setup]
 AppId={{5d17a437-4553-4a2e-80fa-cc207f37982c}
 AppName=Riyan Revit Tools
-AppVersion=1.1.1
+AppVersion=1.1.2
 AppPublisher=Riyan
 AppPublisherURL=https://github.com/udarieimalsha/Riyan.extension
 AppSupportURL=https://github.com/udarieimalsha/Riyan.extension
@@ -10,7 +10,7 @@ DefaultDirName={userappdata}\pyRevit\Extensions\Riyan.extension
 DefaultGroupName=Riyan Revit Tools
 AllowNoIcons=yes
 OutputDir=..
-OutputBaseFilename=RiyanSetup_v1.1.1
+OutputBaseFilename=RiyanSetup_v1.1.2
 ; SetupIconFile=..\Riyan.tab\About.panel\About.pushbutton\icon.png
 Compression=lzma2
 SolidCompression=yes
@@ -24,7 +24,7 @@ PrivilegesRequired=lowest
 ; Version Info for Windows Properties
 VersionInfoCompany=Riyan
 VersionInfoDescription=Riyan Revit Tools Installer
-VersionInfoVersion=1.1.1
+VersionInfoVersion=1.1.2
 VersionInfoCopyright=Copyright (C) 2026 Riyan
 
 [Languages]
@@ -46,5 +46,6 @@ Name: "{group}\Uninstall Riyan Revit Tools"; Filename: "{uninstallexe}"
 Filename: "pyrevit"; Parameters: "reload"; Flags: runhidden nowait skipifsilent; StatusMsg: "Reloading pyRevit..."
 
 [InstallDelete]
-; Clean up old files before installing new ones
+; Clean up old files and any renamed folders
 Type: filesandordirs; Name: "{app}\*"
+Type: filesandordirs; Name: "{app}\Riyan.tab\Coordination.panel\GetCoordinates.pushbutton"
