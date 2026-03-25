@@ -370,21 +370,17 @@ class CopyFromLinkWindow(object):
             if cb.IsChecked
         ]
         if not self.selected_links:
-            WPF.MessageBox.Show(
+            CustomMessageBox.show(
                 "Please select at least one Revit Link.",
-                "No Link Selected",
-                WPF.MessageBoxButton.OK,
-                WPF.MessageBoxImage.Warning
+                "No Link Selected"
             )
             return
 
         self.selected_cats = [bic for bic, cb in self._cat_checkboxes if cb.IsChecked]
         if not self.selected_cats:
-            WPF.MessageBox.Show(
+            CustomMessageBox.show(
                 "Please select at least one element type.",
-                "No Element Types Selected",
-                WPF.MessageBoxButton.OK,
-                WPF.MessageBoxImage.Warning
+                "No Element Types Selected"
             )
             return
 
@@ -398,6 +394,77 @@ class CopyFromLinkWindow(object):
     def show(self):
         self.window.ShowDialog()
         return self.result
+
+
+# ---------------------------------------------------------------------------
+# Custom Dialogue / Message Box
+# ---------------------------------------------------------------------------
+class CustomMessageBox:
+    @staticmethod
+    def show(message, title="Message"):
+        xaml_str = """
+        <Window
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            Title="{title}"
+            Width="400" SizeToContent="Height"
+            WindowStartupLocation="CenterScreen"
+            ResizeMode="NoResize"
+            FontFamily="Segoe UI"
+            Background="Black"
+            WindowStyle="None"
+            AllowsTransparency="True">
+            
+            <Border BorderBrush="#7B2C2C" BorderThickness="1" CornerRadius="8" Background="Black">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header bar -->
+                    <Border Grid.Row="0" Background="#111111" CornerRadius="8,8,0,0" Padding="15,10">
+                        <TextBlock Text="{title}" Foreground="White" FontWeight="Bold" FontSize="14"/>
+                    </Border>
+
+                    <!-- Content area -->
+                    <StackPanel Grid.Row="1" Margin="20,24,20,20">
+                        <TextBlock Text="{message}" Foreground="#E0E0E0" FontSize="13" TextWrapping="Wrap" MaxWidth="350"/>
+                    </StackPanel>
+
+                    <!-- Action buttons -->
+                    <StackPanel Grid.Row="2" HorizontalAlignment="Right" Margin="0,0,20,20">
+                        <Button x:Name="OkBtn" Content="OK" Width="80" Height="28" Cursor="Hand" Foreground="White" FontWeight="SemiBold">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border" Background="#7B2C2C" CornerRadius="4">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#621F1F"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Window>
+        """.replace("{title}", str(title)).replace("{message}", str(message))
+
+        from System.Windows.Markup import XamlReader
+        window = XamlReader.Parse(xaml_str)
+        
+        ok_btn = window.FindName("OkBtn")
+        def on_ok(sender, args):
+            window.DialogResult = True
+            window.Close()
+        ok_btn.Click += on_ok
+        
+        window.ShowDialog()
 
 
 # ---------------------------------------------------------------------------
@@ -426,12 +493,10 @@ def collect_elements_by_bic(link_doc, bic_list):
 def run():
     links = get_link_instances(doc)
     if not links:
-        WPF.MessageBox.Show(
+        CustomMessageBox.show(
             "No loaded Revit Links found in this project.\n\n"
             "Please load at least one Revit Link and try again.",
-            "No Revit Links",
-            WPF.MessageBoxButton.OK,
-            WPF.MessageBoxImage.Information
+            "No Revit Links"
         )
         return
 
@@ -470,11 +535,9 @@ def run():
     if errors:
         msg += "\n\nWarnings:\n" + "\n".join(errors)
 
-    WPF.MessageBox.Show(
+    CustomMessageBox.show(
         msg,
-        "Copy Complete" if not errors else "Copy Completed with Warnings",
-        WPF.MessageBoxButton.OK,
-        WPF.MessageBoxImage.Information if not errors else WPF.MessageBoxImage.Warning
+        "Copy Complete" if not errors else "Copy Completed with Warnings"
     )
 
 
