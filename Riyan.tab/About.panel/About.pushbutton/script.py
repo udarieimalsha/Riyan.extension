@@ -19,11 +19,14 @@ def get_version():
             curr = os.path.dirname(curr)
     except:
         pass
-    return "1.0.3"
+    return "1.0.5" # Default fallback for this version
 
 VERSION = get_version()
 
 def show_about_dialog():
+    # Diagnostic alert to confirm reload
+    forms.alert("Diagnostic: Script v1.0.5 Loaded\nOn Disk: v" + VERSION, title="Debug Info")
+    
     plugin_dir = os.path.dirname(__file__)
     # Robust logo path
     curr = os.path.dirname(__file__)
@@ -136,9 +139,14 @@ def show_about_dialog():
             # Show "Checking..." status
             update_btn.IsEnabled = False
             
-            client = Net.WebClient()
+            from System.Net import WebClient
+            client = WebClient()
             client.Headers.Add("Cache-Control", "no-cache")
-            Net.ServicePointManager.SecurityProtocol |= Net.SecurityProtocolType.Tls12
+            try:
+                from System.Net import ServicePointManager, SecurityProtocolType
+                ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12
+            except:
+                pass # Already set or not available in this env
             
             # Simple check for updates (re-using app-init logic)
             url = "https://raw.githubusercontent.com/udarieimalsha/Riyan.extension/main/update.json"

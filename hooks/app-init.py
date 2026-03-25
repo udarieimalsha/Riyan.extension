@@ -94,8 +94,9 @@ def show_updater_window(version, url):
             msg_txt.Text = "Downloading update... Please wait."
             
             temp_path = os.path.join(os.environ.get("TEMP", "C:\\Temp"), "RiyanSetup_Update.exe")
-            client = Net.WebClient()
-            Net.ServicePointManager.SecurityProtocol |= Net.SecurityProtocolType.Tls12
+            from System.Net import ServicePointManager, SecurityProtocolType, WebClient, Uri
+            client = WebClient()
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12
             
             def set_prog(val): prog_bar.Value = val
             def on_progress(sender, ev):
@@ -115,11 +116,14 @@ def show_updater_window(version, url):
             client.DownloadProgressChanged += on_progress
             client.DownloadFileCompleted += on_complete
             
+            client.DownloadFileAsync(Uri(url), temp_path)
         btn_update.Click += start_update
         window.ShowDialog()
         
-    # Run the window synchronously so PyRevit engine does not collect the scope
-    thread_proc()
+    import System.Threading as Threading
+    t = Threading.Thread(Threading.ThreadStart(thread_proc))
+    t.SetApartmentState(Threading.ApartmentState.STA)
+    t.Start()
 
 def run_exe_update_checker(extension_dir):
     try:
@@ -133,7 +137,8 @@ def run_exe_update_checker(extension_dir):
             
         client = Net.WebClient()
         client.Headers.Add("Cache-Control", "no-cache")
-        Net.ServicePointManager.SecurityProtocol |= Net.SecurityProtocolType.Tls12
+        import System.Net
+        System.Net.ServicePointManager.SecurityProtocol |= System.Net.SecurityProtocolType.Tls12
         import time
         cache_buster = "?v=" + str(int(time.time()))
         json_str = client.DownloadString("https://raw.githubusercontent.com/udarieimalsha/Riyan.extension/main/update.json" + cache_buster)
