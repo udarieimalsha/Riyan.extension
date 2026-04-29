@@ -1,0 +1,287 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Change Host" SizeToContent="Height" Width="450" WindowStartupLocation="CenterScreen"
+        Background="Black" WindowStyle="None" AllowsTransparency="False">
+    
+    <Window.Resources>
+        <!-- Primary Button Style -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#802F2D"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#993836"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Secondary Button Style -->
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#AAAAAA"/>
+            <Setter Property="BorderBrush" Value="#444444"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#2A2A2A"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Main ComboBox Style -->
+        <Style x:Key="DarkComboBoxStyle" TargetType="{x:Type ComboBox}">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="BorderBrush" Value="#444444"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBox}">
+                        <Grid x:Name="MainGrid" SnapsToDevicePixels="true">
+                            <ToggleButton x:Name="ToggleButton" 
+                                          Background="Black" BorderBrush="#444444" BorderThickness="1"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border Background="Black" BorderBrush="#444444" BorderThickness="1" CornerRadius="2">
+                                            <Grid HorizontalAlignment="Right" Width="24">
+                                                <Path Fill="White" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M 0 0 L 4 4 L 8 0 Z"/>
+                                            </Grid>
+                                        </Border>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter x:Name="ContentSite" IsHitTestVisible="false" 
+                                              Content="{TemplateBinding SelectionBoxItem}" 
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" 
+                                              Margin="8,0,28,0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                            <Popup x:Name="PART_Popup" AllowsTransparency="true" IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}" Placement="Bottom">
+                                <Grid x:Name="DropDown" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <Border Background="Black" BorderBrush="#444444" BorderThickness="1"/>
+                                    <ScrollViewer Margin="0" SnapsToDevicePixels="true">
+                                        <StackPanel IsItemsHost="true" KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type ComboBoxItem}">
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderThickness="0" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="Bd" Property="Background" Value="#333333"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="true">
+                                <Setter TargetName="Bd" Property="Background" Value="#802F2D"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="{x:Type TabControl}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style TargetType="{x:Type TabItem}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabItem}">
+                        <Border x:Name="Border" Padding="15,10" Background="Transparent" 
+                                BorderBrush="Transparent" BorderThickness="0,0,0,2">
+                            <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                              ContentSource="Header" Margin="5,2"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="TextElement.Foreground" Value="#802F2D"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#802F2D"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="False">
+                                <Setter Property="TextElement.Foreground" Value="#888888"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="TextElement.Foreground" Value="#CCCCCC"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Custom Title Bar -->
+            <RowDefinition Height="*"/>    <!-- Main Content -->
+        </Grid.RowDefinitions>
+
+        <!-- CUSTOM TITLE BAR -->
+        <Grid x:Name="TitleBar" Grid.Row="0" Background="#1A1A1A" Height="32" MouseLeftButtonDown="TitleBar_MouseDown">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <Image Grid.Column="0" Source="icon.png" Width="16" Height="16" Margin="10,0,5,0" VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="1" Text="Change Elements Host" Foreground="#BBBBBB" FontSize="12" VerticalAlignment="Center" Margin="5,0,0,0"/>
+            
+            <Button Grid.Column="2" x:Name="CloseBtn" Content="✕" Width="45" Height="32" Background="Transparent" Foreground="#888888" BorderThickness="0" Click="CancelButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#E81123"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </Grid>
+
+        <!-- MAIN CONTENT AREA -->
+        <Grid Grid.Row="1" Margin="15,15,15,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Header -->
+                <RowDefinition Height="Auto"/> <!-- Separator -->
+                <RowDefinition Height="Auto"/> <!-- Tab Control -->
+                <RowDefinition Height="Auto"/> <!-- Footer Separator -->
+                <RowDefinition Height="Auto"/> <!-- Footer Buttons -->
+            </Grid.RowDefinitions>
+
+            <!-- HEADER -->
+            <Grid Grid.Row="0" Margin="0,5,0,15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="Change Host" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <TextBlock Text="Re-host elements without changing elevation." Foreground="#888888" FontSize="12"/>
+                </StackPanel>
+                <Image x:Name="LogoImage" Grid.Column="1" Width="80" Height="80" Margin="10,0,0,0" Stretch="Uniform" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- SEPARATOR -->
+            <Rectangle Grid.Row="1" Height="2" Fill="#802F2D" Margin="-15,0,-15,15"/>
+
+            <TabControl x:Name="MainTabControl" Grid.Row="2" Background="Transparent" BorderThickness="0">
+                <!-- TAB 1: REHOST ELEMENTS -->
+                <TabItem Header="Re-Host Elements">
+                    <Grid Margin="0,15,0,20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="15"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="15"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <TextBlock Grid.Row="0" Text="Select a source level to grab elements, then assign a new Target Context. They will retain their absolute 3D position." Foreground="LightGray" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                        
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Source Level / Selection" Foreground="#802F2D" FontWeight="Bold" FontSize="11" Margin="0,0,0,5"/>
+                                <ComboBox x:Name="SourceLevelCombo" SelectionChanged="SourceLevelCombo_SelectionChanged" Style="{StaticResource DarkComboBoxStyle}" Height="32"/>
+                            </StackPanel>
+                            <Button x:Name="PickElementsBtn" Grid.Column="1" Content="Pick from Model" Margin="10,16,0,0" Padding="15,0" Height="32" Style="{StaticResource SecondaryButtonStyle}" Click="PickElementsBtn_Click"/>
+                        </Grid>
+
+                        <Border Grid.Row="3" Background="#111111" BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="4">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="Elements to Re-Host (Ticked will stay in 3D):" Foreground="#888888" FontSize="11" Margin="10,10,10,5" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="2,0,2,2" MaxHeight="130">
+                                    <StackPanel x:Name="RehostElementsListPanel" Margin="8,2,8,8">
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+                        
+                        <Grid Grid.Row="5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Level To Replace" Foreground="#802F2D" FontWeight="Bold" FontSize="11" Margin="0,0,0,5"/>
+                                <ComboBox x:Name="LevelToReplaceCombo" Style="{StaticResource DarkComboBoxStyle}" Height="32"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="New Target Level" Foreground="#802F2D" FontWeight="Bold" FontSize="11" Margin="0,0,0,5"/>
+                                <ComboBox x:Name="TargetLevelCombo" Style="{StaticResource DarkComboBoxStyle}" Height="32"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+
+            </TabControl>
+
+            <!-- FOOTER SEPARATOR -->
+            <Rectangle Grid.Row="3" Height="1" Fill="#2A2A2A" Margin="-15,0,-15,0" VerticalAlignment="Bottom"/>
+
+            <!-- FOOTER BUTTONS -->
+            <DockPanel Grid.Row="4" LastChildFill="False" Margin="0,15,0,0">
+                <Button x:Name="RunButton" Content="Change Host" Style="{StaticResource PrimaryButtonStyle}" Width="150" DockPanel.Dock="Right" Click="RunButton_Click"/>
+                <Button x:Name="CancelButton" Content="Cancel" Style="{StaticResource SecondaryButtonStyle}" Width="90" Margin="0,0,15,0" DockPanel.Dock="Right" Click="CancelButton_Click"/>
+            </DockPanel>
+        </Grid>
+    </Grid>
+</Window>

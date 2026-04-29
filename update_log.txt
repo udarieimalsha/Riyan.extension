@@ -1,0 +1,1485 @@
+
+
+--- Update triggered at 2026-03-25 16:33:11.780000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-25 16:55:01.637000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-25 17:05:19.756000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-26 08:47:57.177000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 08:37:30.883000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 13:44:50.647000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 13:45:18.515000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 13:50:10.442000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 13:50:17.839000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 13:54:03.039000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 13:55:24.804000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 13:57:39.314000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 13:59:34.410000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:02:47.324000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:07:33.011000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:07:41.547000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:07:53.209000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:11:02.032000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:12:20.524000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:14:17.473000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:18:09.578000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:18:25.802000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:21:08.753000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:29:19.435000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:29:39.260000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:32:02.722000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:34:08.754000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-27 14:34:15.461000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-28 13:23:16.358000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-28 15:57:07.218000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-29 09:13:43.650000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-29 10:30:09.794000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-29 13:38:27.204000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-30 08:24:55.512000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-03-31 08:39:27.084000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-01 08:51:51.149000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-02 08:29:23.525000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-03 12:32:53.944000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-03 12:57:31.843000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-03 13:20:14.067000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-06 08:26:23.467000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-06 12:25:55.240000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-06 12:31:51.377000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-06 13:38:52.876000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-07 08:37:28.940000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-07 15:04:43.035000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-08 08:12:20.904000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-09 07:57:07.126000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-10 07:59:59.371000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-20 08:36:50.972000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-21 07:58:54.898000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-21 08:50:13.987000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-22 08:25:57.959000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-22 17:04:08.674000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
+
+
+--- Update triggered at 2026-04-23 08:40:38.582000 ---
+Running git stash...
+Stash Output:
+startup.py: needs merge
+
+Error:
+error: could not write index
+
+Running git pull...
+Pull Output:
+
+Error:
+error: Pulling is not possible because you have unmerged files.
+hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+hint: as appropriate to mark resolution and make a commit.
+fatal: Exiting because of an unresolved conflict.
+
+Running git stash pop...
+Pop Output:
+startup.py: needs merge
+The stash entry is kept in case you need it again.
+
+Error:
+error: could not write index
+
