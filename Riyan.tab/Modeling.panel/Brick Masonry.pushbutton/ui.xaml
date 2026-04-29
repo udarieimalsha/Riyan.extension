@@ -1,0 +1,83 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Brick Masonry Tool" Height="500" Width="400"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        Background="#F5F5F5" FontFamily="Inter, Segoe UI">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#800000" Padding="15">
+            <StackPanel Orientation="Horizontal">
+                <Image Source="logo.png" Height="30" Width="30" Margin="0,0,10,0"/>
+                <TextBlock Text="BRICK MASONRY TOOL" Foreground="White" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Border Padding="20">
+                <StackPanel>
+                    <!-- Block Dimensions -->
+                    <TextBlock Text="Block Dimensions (mm)" FontWeight="Bold" Margin="0,0,0,10" Foreground="#333"/>
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                        <TextBlock Text="Length" FontSize="11" Foreground="#666"/>
+                        <TextBox x:Name="txt_length" Text="400" Padding="5" Margin="0,2,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="5,0,5,0">
+                        <TextBlock Text="Width" FontSize="11" Foreground="#666"/>
+                        <TextBox x:Name="txt_width" Text="200" Padding="5" Margin="0,2,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="5,0,0,0">
+                        <TextBlock Text="Height" FontSize="11" Foreground="#666"/>
+                        <TextBox x:Name="txt_height" Text="200" Padding="5" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Wall Settings -->
+                <TextBlock Text="Wall Settings" FontWeight="Bold" Margin="0,0,0,10" Foreground="#333"/>
+                <StackPanel Margin="0,0,0,20">
+                    <TextBlock Text="Wall Height (mm)" FontSize="11" Foreground="#666"/>
+                    <TextBox x:Name="txt_wall_height" Text="3000" Padding="5" Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- Bond Pattern -->
+                <TextBlock Text="Bond Pattern" FontWeight="Bold" Margin="0,0,0,10" Foreground="#333"/>
+                <ComboBox x:Name="cb_pattern" SelectedIndex="0" Padding="5" Margin="0,0,0,20">
+                    <ComboBoxItem Content="Running Bond (Stretcher)"/>
+                    <ComboBoxItem Content="Stack Bond"/>
+                </ComboBox>
+
+                <!-- Mortar Settings -->
+                <TextBlock Text="Mortar Gap (mm)" FontWeight="Bold" Margin="0,0,0,10" Foreground="#333"/>
+                <TextBox x:Name="txt_mortar" Text="10" Padding="5" Margin="0,0,0,20"/>
+
+                <!-- Wall Conversion Options -->
+                <TextBlock Text="Wall Conversion Options" FontWeight="Bold" Margin="0,0,0,10" Foreground="#333"/>
+                <CheckBox x:Name="chk_hide_wall" IsChecked="True" Content="Hide original wall after conversion" Margin="0,0,0,20"/>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Background="White" BorderBrush="#EEE" BorderThickness="0,1,0,0" Padding="15">
+            <Button x:Name="btn_convert_walls" Content="CONVERT WALLS" Background="#800000" Foreground="White" FontWeight="Bold" Padding="10" Click="btn_convert_walls_Click">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="5"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </Border>
+    </Grid>
+</Window>
