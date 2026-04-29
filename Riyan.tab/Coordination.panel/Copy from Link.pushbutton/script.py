@@ -16,11 +16,15 @@ clr.AddReference('WindowsBase')
 from Autodesk.Revit.DB import (
     FilteredElementCollector,
     RevitLinkInstance,
-    BuiltInCategory,
     ElementTransformUtils,
     CopyPasteOptions,
     Transaction,
     ElementId,
+    CategoryType,
+    ElementMulticategoryFilter,
+    IFailuresPreprocessor,
+    FailureSeverity,
+    FailureProcessingResult,
 )
 from System.Collections.Generic import List
 from System import Uri, UriKind
@@ -42,20 +46,45 @@ MAROON      = "#7B2C2C"
 MAROON_DARK = "#621F1F"
 MAROON_LITE = "#9B3C3C"
 
-# ---------------------------------------------------------------------------
-# Available element categories to copy
-# ---------------------------------------------------------------------------
-CATEGORIES = [
-    ("Walls",               BuiltInCategory.OST_Walls),
-    ("Structural Columns",  BuiltInCategory.OST_StructuralColumns),
-    ("Structural Framing",  BuiltInCategory.OST_StructuralFraming),
-    ("Floors",              BuiltInCategory.OST_Floors),
-    ("Doors",               BuiltInCategory.OST_Doors),
-    ("Windows",             BuiltInCategory.OST_Windows),
-    ("Roofs",               BuiltInCategory.OST_Roofs),
-    ("Stairs",              BuiltInCategory.OST_Stairs),
-    ("Railings",            BuiltInCategory.OST_StairsRailing),
-]
+def get_categories_in_links(link_instances):
+    """Return sorted list of (IntegerValue, name) tuples for all
+    model categories that appear in any of the provided link instances.
+    Excludes non-physical and system categories."""
+    
+    EXCLUDE_CATS = {
+        "Materials", "Material Assets", "Internal Origin",
+        "Legend Components", "Lines", "HVAC Zones", "Rooms",
+        "Spaces", "Areas", "Project Base Point", "Survey Point",
+        "Raster Images", "Cameras", "Section Boxes", "Scope Boxes",
+        "Mass", "Detail Items", "Pads", "Location Data",
+        "Site", "Curtain Systems", "Shaft Openings",
+        "Project Information", "Primary Contours", "Pipe Segments",
+        "Railing Rail Path Extension Lines", "Topography", "Center lines"
+    }
+
+    seen = {} # {IntegerValue: Name}
+    for li in link_instances:
+        link_doc = li.GetLinkDocument()
+        if not link_doc:
+            continue
+            
+        # Only get actual modeled instances (no types, no view-specific 2D detailing)
+        collector = FilteredElementCollector(link_doc)\
+                    .WhereElementIsNotElementType()\
+                    .WhereElementIsViewIndependent()
+                    
+        for elem in collector:
+            cat = elem.Category
+            if cat and cat.CategoryType == CategoryType.Model:
+                cat_name = cat.Name
+                # Exclude junk/system categories and any hidden ones starting with <
+                if cat_name not in EXCLUDE_CATS and not cat_name.startswith("<"):
+                    cat_val = cat.Id.IntegerValue
+                    if cat_val not in seen:
+                        seen[cat_val] = cat_name
+                        
+    # Return as list of (IntegerValue, Name)
+    return sorted(seen.items(), key=lambda x: x[1])
 
 # ---------------------------------------------------------------------------
 # WPF Window XAML  — white background, maroon accents
@@ -303,7 +332,7 @@ class CopyFromLinkWindow(object):
         from System.Windows.Markup import XamlReader
         self.window = XamlReader.Parse(XAML)
 
-        # Load logo image programmatically (avoids XAML URI issues)
+        # Load logo image
         logo_ctrl = self.window.FindName("LogoImage")
         if logo_ctrl is not None and os.path.exists(LOGO_PATH):
             try:
@@ -313,7 +342,7 @@ class CopyFromLinkWindow(object):
                 bmp.EndInit()
                 logo_ctrl.Source = bmp
             except Exception:
-                pass  # silently skip if logo can't load
+                pass
 
         # Named controls
         self.link_panel   = self.window.FindName("LinkPanel")
@@ -327,7 +356,7 @@ class CopyFromLinkWindow(object):
 
         check_style = self.window.FindResource("StyledCheck")
 
-        # Link checkboxes
+        # Create link checkboxes
         for li in self.link_instances:
             cb = Controls.CheckBox()
             cb.Content   = li.Name
@@ -335,54 +364,95 @@ class CopyFromLinkWindow(object):
             cb.IsChecked = False
             self.link_panel.Children.Add(cb)
             self._link_checkboxes.append(cb)
+            
+            # Register events
+            cb.Checked   += self._on_link_toggle
+            cb.Unchecked += self._on_link_toggle
+
+        # Default select first link and refresh
         if self._link_checkboxes:
             self._link_checkboxes[0].IsChecked = True
+        self._refresh_categories()
 
-        # Category checkboxes
-        for cat_name, bic in CATEGORIES:
+        # Button events
+        self.lnk_all_btn.Click  += lambda s, e: self._set_links_state(True)
+        self.lnk_none_btn.Click += lambda s, e: self._set_links_state(False)
+        self.cat_all_btn.Click  += lambda s, e: self._set_cats_state(True)
+        self.cat_none_btn.Click += lambda s, e: self._set_cats_state(False)
+        self.copy_btn.Click     += self._on_copy
+        self.cancel_btn.Click   += self._on_cancel
+
+    def _refresh_categories(self):
+        self.cat_panel.Children.Clear()
+        self._cat_checkboxes = []
+        
+        selected_link_objs = []
+        for i, cb in enumerate(self._link_checkboxes):
+            if cb.IsChecked:
+                selected_link_objs.append(self.link_instances[i])
+        
+        if not selected_link_objs:
+            lbl = Controls.TextBlock()
+            lbl.Text = "Select at least one link to see element types."
+            lbl.Foreground = Media.SolidColorBrush(Media.Colors.Gray)
+            lbl.FontSize = 11
+            self.cat_panel.Children.Add(lbl)
+            return
+
+        cats = get_categories_in_links(selected_link_objs)
+        check_style = self.window.FindResource("StyledCheck")
+        
+        for cat_val, cat_name in cats:
             cb = Controls.CheckBox()
             cb.Content   = cat_name
             cb.Style     = check_style
             cb.IsChecked = False
             self.cat_panel.Children.Add(cb)
-            self._cat_checkboxes.append((bic, cb))
+            # Store the integer value instead of the ElementId object
+            self._cat_checkboxes.append((cat_val, cb))
 
-        # Events
-        self.lnk_all_btn.Click  += lambda s, e: self._set_links(True)
-        self.lnk_none_btn.Click += lambda s, e: self._set_links(False)
-        self.cat_all_btn.Click  += lambda s, e: self._set_cats(True)
-        self.cat_none_btn.Click += lambda s, e: self._set_cats(False)
-        self.copy_btn.Click     += self._on_copy
-        self.cancel_btn.Click   += self._on_cancel
+    def _on_link_toggle(self, sender, args):
+        self._refresh_categories()
 
-    def _set_links(self, state):
+    def _set_links_state(self, state):
         for cb in self._link_checkboxes:
             cb.IsChecked = state
+        self._refresh_categories()
 
-    def _set_cats(self, state):
+    def _set_cats_state(self, state):
         for _, cb in self._cat_checkboxes:
             cb.IsChecked = state
 
     def _on_copy(self, sender, args):
-        self.selected_links = [
-            self.link_instances[i]
-            for i, cb in enumerate(self._link_checkboxes)
-            if cb.IsChecked
-        ]
+        self.selected_links = []
+        for i, cb in enumerate(self._link_checkboxes):
+            if cb.IsChecked:
+                self.selected_links.append(self.link_instances[i])
+                
         if not self.selected_links:
-            CustomMessageBox.show(
-                "Please select at least one Revit Link.",
-                "No Link Selected"
-            )
+            CustomMessageBox.show("Please select at least one Revit Link.", "No Link Selected")
             return
 
-        self.selected_cats = [bic for bic, cb in self._cat_checkboxes if cb.IsChecked]
+        self.selected_cats = [cat_val for cat_val, cb in self._cat_checkboxes if cb.IsChecked]
         if not self.selected_cats:
-            CustomMessageBox.show(
-                "Please select at least one element type.",
-                "No Element Types Selected"
-            )
+            CustomMessageBox.show("Please select at least one element type.", "No Element Types Selected")
             return
+
+        # Hosted Elements Check
+        walls_bic_val = -2000011 # OST_Walls
+        doors_bic_val = -2000023 # OST_Doors
+        wins_bic_val  = -2000014 # OST_Windows
+        
+        has_doors = doors_bic_val in self.selected_cats
+        has_wins  = wins_bic_val  in self.selected_cats
+        has_walls = walls_bic_val in self.selected_cats
+        
+        if (has_doors or has_wins) and not has_walls:
+            warn_msg = "You have selected Doors or Windows WITHOUT selecting Walls.\n\n" \
+                       "Revit cannot copy these elements into the project if their host Walls are not also selected.\n\n" \
+                       "Do you want to continue anyway? (Recommended: go back and select Walls)"
+            if not CustomMessageBox.show(warn_msg, "Missing Hosts Warning", yes_no=True):
+                return
 
         self.result = True
         self.window.Close()
@@ -401,13 +471,13 @@ class CopyFromLinkWindow(object):
 # ---------------------------------------------------------------------------
 class CustomMessageBox:
     @staticmethod
-    def show(message, title="Message"):
+    def show(message, title="Message", yes_no=False):
+        """Show a custom message box. If yes_no is True, returns True for Yes, False for No."""
         xaml_str = """
         <Window
             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-            Title="{title}"
-            Width="400" SizeToContent="Height"
+            Width="460" SizeToContent="Height"
             WindowStartupLocation="CenterScreen"
             ResizeMode="NoResize"
             FontFamily="Segoe UI"
@@ -423,18 +493,24 @@ class CustomMessageBox:
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Header bar -->
                     <Border Grid.Row="0" Background="#111111" CornerRadius="8,8,0,0" Padding="15,10">
-                        <TextBlock Text="{title}" Foreground="White" FontWeight="Bold" FontSize="14"/>
+                        <TextBlock x:Name="TitleBlock" Foreground="White" FontWeight="Bold" FontSize="14"/>
                     </Border>
 
-                    <!-- Content area -->
                     <StackPanel Grid.Row="1" Margin="20,24,20,20">
-                        <TextBlock Text="{message}" Foreground="#E0E0E0" FontSize="13" TextWrapping="Wrap" MaxWidth="350"/>
+                        <TextBlock x:Name="MsgBlock" Foreground="#E0E0E0" FontSize="13" TextWrapping="Wrap" MaxWidth="410"/>
                     </StackPanel>
 
-                    <!-- Action buttons -->
-                    <StackPanel Grid.Row="2" HorizontalAlignment="Right" Margin="0,0,20,20">
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,20,20">
+                        <Button x:Name="NoBtn" Content="Cancel" Width="80" Height="28" Cursor="Hand" Foreground="#A0A0A0" Margin="0,0,10,0" Visibility="Collapsed">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border" Background="#222222" CornerRadius="4">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
                         <Button x:Name="OkBtn" Content="OK" Width="80" Height="28" Cursor="Hand" Foreground="White" FontWeight="SemiBold">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
@@ -453,18 +529,50 @@ class CustomMessageBox:
                 </Grid>
             </Border>
         </Window>
-        """.replace("{title}", str(title)).replace("{message}", str(message))
-
+        """
         from System.Windows.Markup import XamlReader
         window = XamlReader.Parse(xaml_str)
         
+        window.Title = str(title)
+        window.FindName("TitleBlock").Text = str(title)
+        window.FindName("MsgBlock").Text = str(message)
+        
         ok_btn = window.FindName("OkBtn")
+        no_btn = window.FindName("NoBtn")
+        
+        if yes_no:
+            ok_btn.Content = "Continue"
+            no_btn.Visibility = WPF.Visibility.Visible
+            
+        result = [False]
+        
         def on_ok(sender, args):
+            result[0] = True
             window.DialogResult = True
             window.Close()
+            
+        def on_no(sender, args):
+            result[0] = False
+            window.DialogResult = False
+            window.Close()
+            
         ok_btn.Click += on_ok
+        no_btn.Click += on_no
         
         window.ShowDialog()
+        return result[0]
+
+
+# ---------------------------------------------------------------------------
+# Failure Handling (Suppress warnings like "inserts outside of hosts")
+# ---------------------------------------------------------------------------
+class CopyWarningsSwallower(IFailuresPreprocessor):
+    def PreprocessFailures(self, failuresAccessor):
+        fail_list = failuresAccessor.GetFailureMessages()
+        for f in fail_list:
+            if f.GetSeverity() == FailureSeverity.Warning:
+                failuresAccessor.DeleteWarning(f)
+        return FailureProcessingResult.Continue
 
 
 # ---------------------------------------------------------------------------
@@ -475,16 +583,22 @@ def get_link_instances(document):
     return [li for li in collector if li.GetLinkDocument() is not None]
 
 
-def collect_elements_by_bic(link_doc, bic_list):
-    ids = List[ElementId]()
-    for bic in bic_list:
-        col = (FilteredElementCollector(link_doc)
-               .OfCategory(bic)
-               .WhereElementIsNotElementType()
-               .ToElementIds())
-        for eid in col:
-            ids.Add(eid)
-    return ids
+def collect_elements_by_categories(link_doc, cat_vals):
+    """Collect all element IDs in link_doc for the given category integer values.
+    Returns a simple list of ElementIds."""
+    found_ids = List[ElementId]()
+    
+    # Iterate manually for 100% reliability, enforcing view independence
+    all_elements = FilteredElementCollector(link_doc)\
+                   .WhereElementIsNotElementType()\
+                   .WhereElementIsViewIndependent()
+                   
+    for elem in all_elements:
+        cat = elem.Category
+        if cat and cat.Id.IntegerValue in cat_vals:
+            found_ids.Add(elem.Id)
+            
+    return found_ids
 
 
 # ---------------------------------------------------------------------------
@@ -508,37 +622,54 @@ def run():
     errors       = []
     copy_options = CopyPasteOptions()
 
+    summary_parts = []
+    
     for link_instance in ui.selected_links:
         link_doc  = link_instance.GetLinkDocument()
+        if not link_doc:
+            continue
+            
         transform = link_instance.GetTotalTransform()
-        ids = collect_elements_by_bic(link_doc, ui.selected_cats)
-
-        if ids.Count == 0:
-            errors.append("'{}': no matching elements found.".format(link_instance.Name))
+        
+        # 1. Collect
+        ids_to_copy = collect_elements_by_categories(link_doc, ui.selected_cats)
+        
+        if ids_to_copy.Count == 0:
             continue
 
+        # 2. Attempt Copy
         t = Transaction(doc, "Copy from Link: {}".format(link_instance.Name))
         try:
+            # Suppress warnings (especially for hosted elements)
+            opts = t.GetFailureHandlingOptions()
+            opts.SetFailuresPreprocessor(CopyWarningsSwallower())
+            t.SetFailureHandlingOptions(opts)
+            
             t.Start()
-            copied = ElementTransformUtils.CopyElements(
-                link_doc, ids, doc, transform, copy_options
+            copied_ids = ElementTransformUtils.CopyElements(
+                link_doc, ids_to_copy, doc, transform, copy_options
             )
             t.Commit()
-            total_copied += len(list(copied))
+            
+            total_copied += len(list(copied_ids))
         except Exception as ex:
             if t.HasStarted():
                 t.RollBack()
             errors.append("'{}': {}".format(link_instance.Name, str(ex)))
 
-    msg = "Copied {} element(s) from {} link(s).".format(
-        total_copied, len(ui.selected_links))
-    if errors:
-        msg += "\n\nWarnings:\n" + "\n".join(errors)
+    if total_copied > 0 or not errors:
+        msg = "Elements copied successfully!\n\n"
+        msg += "Total elements copied: {}".format(total_copied)
+        if total_copied == 0:
+            msg = "No elements were copied.\n\n"
+            msg += "Note: If you were copying Doors or Windows, please make sure to select their host Walls as well."
+    else:
+        msg = "Copy process finished with errors."
 
-    CustomMessageBox.show(
-        msg,
-        "Copy Complete" if not errors else "Copy Completed with Warnings"
-    )
+    if errors:
+        msg += "\n\nWarnings/Errors:\n" + "\n".join(errors)
+
+    CustomMessageBox.show(msg, "Copy Elements Result")
 
 
 run()
