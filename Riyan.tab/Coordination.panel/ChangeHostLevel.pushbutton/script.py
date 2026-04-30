@@ -285,6 +285,9 @@ def process_elements(selected_elements, target_level, source_level=None):
                                 # List of parameters to NOT copy (so we don't mess up the new hosting)
                                 exclude_bips = [
                                     DB.BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM,
+                                    DB.BuiltInParameter.FAMILY_LEVEL_PARAM,
+                                    DB.BuiltInParameter.FAMILY_BASE_LEVEL_PARAM,
+                                    DB.BuiltInParameter.LEVEL_PARAM,
                                     DB.BuiltInParameter.SKETCH_PLANE_PARAM,
                                     DB.BuiltInParameter.STRUCTURAL_BEAM_END0_ELEVATION,
                                     DB.BuiltInParameter.STRUCTURAL_BEAM_END1_ELEVATION,
@@ -309,6 +312,24 @@ def process_elements(selected_elements, target_level, source_level=None):
                                                 elif p.StorageType == DB.StorageType.ElementId:
                                                     new_p.Set(p.AsElementId())
                                         except: pass
+                                
+                                # EXPLICITLY enforce the target level and adjust offsets to maintain physical position
+                                doc.Regenerate()
+                                ref_param = new_beam.get_Parameter(DB.BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM)
+                                if ref_param and not ref_param.IsReadOnly:
+                                    current_lvl_id = ref_param.AsElementId()
+                                    if current_lvl_id != target_level.Id:
+                                        start_off = new_beam.get_Parameter(DB.BuiltInParameter.STRUCTURAL_BEAM_END0_ELEVATION)
+                                        end_off = new_beam.get_Parameter(DB.BuiltInParameter.STRUCTURAL_BEAM_END1_ELEVATION)
+                                        current_lvl = doc.GetElement(current_lvl_id)
+                                        
+                                        if current_lvl and start_off and end_off:
+                                            abs_start = current_lvl.Elevation + start_off.AsDouble()
+                                            abs_end = current_lvl.Elevation + end_off.AsDouble()
+                                            
+                                            ref_param.Set(target_level.Id)
+                                            start_off.Set(abs_start - target_level.Elevation)
+                                            end_off.Set(abs_end - target_level.Elevation)
                                 
                                 doc.Delete(el.Id)
                                 changed = True
