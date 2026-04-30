@@ -87,6 +87,16 @@ def get_level_id_from_list(element, bip_list):
             eid = p.AsElementId()
             if eid and eid != DB.ElementId.InvalidElementId:
                 return eid
+    
+    # Fallback: Search all parameters for any Level
+    for p in element.Parameters:
+        if p.StorageType == DB.StorageType.ElementId:
+            eid = p.AsElementId()
+            if eid and eid != DB.ElementId.InvalidElementId:
+                test_el = doc.GetElement(eid)
+                if test_el and isinstance(test_el, DB.Level):
+                    return eid
+                    
     return DB.ElementId.InvalidElementId
 
 def get_any_level_param(element, bip_list):
@@ -164,135 +174,159 @@ def process_elements(selected_elements, target_level, source_level=None):
         show_custom_alert("No target level selected.")
         return
         
-    t = DB.Transaction(doc, "Change Element Host")
+    t = DB.Transaction(doc, "Rehost Elements")
     t.Start()
+    
     count = 0
     try:
         for el in selected_elements:
             is_beam = el.Category and el.Category.Id.IntegerValue == int(DB.BuiltInCategory.OST_StructuralFraming)
             changed = False
 
-            # ---- BEAM: special handling ----
-            if is_beam:
-                old_lvl_id = get_level_id_from_list(el, BASE_LEVEL_PARAMS)
+            # Base logic
+            base_lvl_param = get_param_from_list(el, BASE_LEVEL_PARAMS)
+            base_off_param = get_param_from_list(el, BASE_OFFSET_PARAMS)
+            
+            if base_lvl_param:
+                old_lvl_id = base_lvl_param.AsElementId()
+                if not source_level or old_lvl_id == source_level.Id:
+                    old_lvl = doc.GetElement(old_lvl_id)
+                    if old_lvl and base_off_param:
+                        base_absolute_z = old_lvl.Elevation + base_off_param.AsDouble()
+                        new_off = base_absolute_z - target_level.Elevation
+                        base_lvl_param.Set(target_level.Id)
+                        base_off_param.Set(new_off)
+                        changed = True
+            
+            # Top logic
+            top_lvl_param = get_param_from_list(el, TOP_LEVEL_PARAMS)
+            top_off_param = get_param_from_list(el, TOP_OFFSET_PARAMS)
+            if top_lvl_param and top_off_param:
+                old_lvl_id = top_lvl_param.AsElementId()
                 if not source_level or old_lvl_id == source_level.Id:
                     old_lvl = doc.GetElement(old_lvl_id)
                     if old_lvl:
-                        end0_param = el.get_Parameter(DB.BuiltInParameter.STRUCTURAL_BEAM_END0_ELEVATION)
-                        end1_param = el.get_Parameter(DB.BuiltInParameter.STRUCTURAL_BEAM_END1_ELEVATION)
-                        if end0_param and end1_param:
-                            # Cache absolute Z positions before any changes
-                            abs_end0 = old_lvl.Elevation + end0_param.AsDouble()
-                            abs_end1 = old_lvl.Elevation + end1_param.AsDouble()
+                        abs_top_z = old_lvl.Elevation + top_off_param.AsDouble()
+                        new_top_off = abs_top_z - target_level.Elevation
+                        top_lvl_param.Set(target_level.Id)
+                        top_off_param.Set(new_top_off)
+                        changed = True
+
+            if is_beam and not changed:
+                # Basic beam fallback
+                trial_bips = [
+                    DB.BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM,
+                    DB.BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM,
+                    DB.BuiltInParameter.SCHEDULE_LEVEL_PARAM,
+                    DB.BuiltInParameter.HOST_ID_PARAM
+                ]
+                for bip in trial_bips:
+                    try:
+                        p = el.get_Parameter(bip)
+                        if p and p.Set(target_level.Id):
+                            changed = True
+                            break
+                    except: continue
+
+            if is_beam and not changed:
+                # Advanced beam fallback for Work-Plane-Based beams
+                p_sp = el.get_Parameter(DB.BuiltInParameter.SKETCH_PLANE_PARAM)
+                if p_sp:
+                    if not p_sp.IsReadOnly:
+                        old_sp_id = p_sp.AsElementId()
+                        if old_sp_id != DB.ElementId.InvalidElementId:
+                            # We need to maintain the physical Z position.
+                            start_off_p = el.get_Parameter(DB.BuiltInParameter.STRUCTURAL_BEAM_END0_ELEVATION)
+                            end_off_p = el.get_Parameter(DB.BuiltInParameter.STRUCTURAL_BEAM_END1_ELEVATION)
                             
-                            # Try multiple approaches to change the reference level
-                            level_set = False
+                            old_lvl_id = get_level_id_from_list(el, BASE_LEVEL_PARAMS)
+                            old_lvl = doc.GetElement(old_lvl_id)
                             
-                            # Approach 1: Try all known Level parameters (Built-in)
-                            trial_bips = [
-                                DB.BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM,
-                                DB.BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM,
-                                DB.BuiltInParameter.SCHEDULE_LEVEL_PARAM,
-                                DB.BuiltInParameter.FAMILY_BASE_LEVEL_PARAM
-                            ]
-                            
-                            for bip in trial_bips:
+                            if old_lvl and start_off_p and end_off_p:
+                                abs_start_z = old_lvl.Elevation + start_off_p.AsDouble()
+                                abs_end_z = old_lvl.Elevation + end_off_p.AsDouble()
+                                
                                 try:
-                                    p = el.get_Parameter(bip)
-                                    if p and not p.IsReadOnly:
-                                        p.Set(target_level.Id)
-                                        level_set = True
-                                        break
-                                except:
-                                    continue
-                            
-                            # Approach 2: Search by name and storage type
-                            if not level_set:
-                                for p in el.Parameters:
-                                    if "Level" in p.Definition.Name and p.StorageType == DB.StorageType.ElementId and not p.IsReadOnly:
-                                        try:
-                                            p.Set(target_level.Id)
-                                            level_set = True
+                                    # Find or create the SketchPlane for the target level
+                                    target_sp = None
+                                    sp_collector = DB.FilteredElementCollector(doc).OfClass(DB.SketchPlane).ToElements()
+                                    for sp in sp_collector:
+                                        if sp.Name == target_level.Name:
+                                            target_sp = sp
                                             break
-                                        except:
-                                            continue
-                            
-                            # Approach 3: Last resort - try any level param even if potentially tricky
-                            if not level_set:
-                                try:
-                                    p = get_any_level_param(el, BASE_LEVEL_PARAMS)
-                                    if p:
-                                        p.Set(target_level.Id)
-                                        level_set = True
-                                except:
-                                    pass
-                            
-                            # Only adjust end elevations if level change succeeded
-                            if level_set:
-                                end0_param.Set(abs_end0 - target_level.Elevation)
-                                end1_param.Set(abs_end1 - target_level.Elevation)
+                                    
+                                    if not target_sp:
+                                        target_sp = DB.SketchPlane.Create(doc, target_level.Id)
+                                        
+                                    if target_sp:
+                                        # Change the Work Plane
+                                        p_sp.Set(target_sp.Id)
+                                        doc.Regenerate() # Force Revit to process the plane change
+                                        
+                                        # Immediately adjust offsets so it doesn't move physically
+                                        start_off_p.Set(abs_start_z - target_level.Elevation)
+                                        end_off_p.Set(abs_end_z - target_level.Elevation)
+                                        changed = True
+                                except: pass
+                    else:
+                        # LOCKED WORK PLANE FALLBACK: Clone and Swap
+                        # LOCKED WORK PLANE FALLBACK: True Clone via NewFamilyInstance
+                        try:
+                            loc = el.Location
+                            if isinstance(loc, DB.LocationCurve):
+                                curve = loc.Curve
+                                symbol = el.Symbol
+                                if not symbol.IsActive:
+                                    symbol.Activate()
+                                
+                                # Create a brand new beam directly on the target level (Unlocked!)
+                                new_beam = doc.Create.NewFamilyInstance(curve, symbol, target_level, DB.Structure.StructuralType.Beam)
+                                
+                                # List of parameters to NOT copy (so we don't mess up the new hosting)
+                                exclude_bips = [
+                                    DB.BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM,
+                                    DB.BuiltInParameter.SKETCH_PLANE_PARAM,
+                                    DB.BuiltInParameter.STRUCTURAL_BEAM_END0_ELEVATION,
+                                    DB.BuiltInParameter.STRUCTURAL_BEAM_END1_ELEVATION,
+                                    DB.BuiltInParameter.HOST_ID_PARAM,
+                                    DB.BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM,
+                                    DB.BuiltInParameter.SCHEDULE_LEVEL_PARAM
+                                ]
+                                exclude_ids = [DB.ElementId(bip) for bip in exclude_bips]
+                                
+                                # Copy properties
+                                for p in el.Parameters:
+                                    if p.Id not in exclude_ids and not p.IsReadOnly:
+                                        try:
+                                            new_p = new_beam.get_Parameter(p.Definition)
+                                            if new_p and not new_p.IsReadOnly:
+                                                if p.StorageType == DB.StorageType.Double:
+                                                    new_p.Set(p.AsDouble())
+                                                elif p.StorageType == DB.StorageType.Integer:
+                                                    new_p.Set(p.AsInteger())
+                                                elif p.StorageType == DB.StorageType.String:
+                                                    new_p.Set(p.AsString())
+                                                elif p.StorageType == DB.StorageType.ElementId:
+                                                    new_p.Set(p.AsElementId())
+                                        except: pass
+                                
+                                doc.Delete(el.Id)
                                 changed = True
-
-            else:
-                # ---- NON-BEAM: Handle Base Level ----
-                base_lvl_param = get_param_from_list(el, BASE_LEVEL_PARAMS)
-                base_off_param = get_param_from_list(el, BASE_OFFSET_PARAMS)
-                
-                if base_lvl_param:
-                    old_lvl_id = base_lvl_param.AsElementId()
-                    if not source_level or old_lvl_id == source_level.Id:
-                        old_lvl = doc.GetElement(old_lvl_id)
-                        if old_lvl and base_off_param:
-                            old_off = base_off_param.AsDouble()
-                            base_absolute_z = old_lvl.Elevation + old_off
-                            new_off = base_absolute_z - target_level.Elevation
-                            base_lvl_param.Set(target_level.Id)
-                            base_off_param.Set(new_off)
-                            changed = True
-                
-                # ---- NON-BEAM: Handle Top Level ----
-                top_lvl_param = get_param_from_list(el, TOP_LEVEL_PARAMS)
-                top_off_param = get_param_from_list(el, TOP_OFFSET_PARAMS)
-                
-                if top_lvl_param and top_off_param:
-                    old_lvl_id = top_lvl_param.AsElementId()
-                    if not source_level or old_lvl_id == source_level.Id:
-                        old_lvl = doc.GetElement(old_lvl_id)
-                        absolute_top_z = None
-                        if old_lvl:
-                            old_off = top_off_param.AsDouble()
-                            absolute_top_z = old_lvl.Elevation + old_off
-                        else:
-                            # Unconnected top (e.g. Walls)
-                            base_lvl_p = get_param_from_list(el, BASE_LEVEL_PARAMS)
-                            base_off_p = get_param_from_list(el, BASE_OFFSET_PARAMS)
-                            b_lvl = doc.GetElement(base_lvl_p.AsElementId()) if base_lvl_p else None
-                            if b_lvl and base_off_p:
-                                b_z = b_lvl.Elevation + base_off_p.AsDouble()
-                                unconn_param = el.get_Parameter(DB.BuiltInParameter.WALL_USER_HEIGHT_PARAM)
-                                if unconn_param:
-                                    absolute_top_z = b_z + unconn_param.AsDouble()
-                                else:
-                                    bbox = el.get_BoundingBox(None)
-                                    if bbox:
-                                        absolute_top_z = bbox.Max.Z
-
-                        if absolute_top_z is not None:
-                            new_top_off = absolute_top_z - target_level.Elevation
-                            top_lvl_param.Set(target_level.Id)
-                            top_off_param.Set(new_top_off)
-                            changed = True
+                        except: pass
 
             if changed:
                 count += 1
+                
         t.Commit()
+        
         total = len(selected_elements)
         if count == total:
             show_custom_alert("Successfully re-hosted {} element(s).".format(count))
         elif count > 0:
-            show_custom_alert("Re-hosted {} of {} element(s).\n{} element(s) could not be re-hosted (beam reference level may be read-only in this Revit version).".format(count, total, total - count))
+            show_custom_alert("Re-hosted {} of {} element(s).".format(count, total))
         else:
             show_custom_alert("Could not re-host any elements. Beam reference levels may be read-only. Try selecting elements manually and re-host via Revit Properties panel.")
+            
     except Exception as e:
         if t.HasStarted() and not t.HasEnded(): 
             t.RollBack()
