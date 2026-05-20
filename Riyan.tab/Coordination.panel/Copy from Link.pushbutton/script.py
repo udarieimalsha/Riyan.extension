@@ -669,16 +669,50 @@ def run():
             if t.HasStarted():
                 t.RollBack()
                 
-            err_text = swallower.error_message if swallower.error_message else str(ex)
+            # Fallback: Copy elements one-by-one so that the healthy ones still copy successfully
+            single_errors = 0
+            successful_copies = 0
             
-            # Check for workplane hosting errors (common with Lighting Fixtures, Mech Equipment, etc.)
-            if "work plane" in err_text.lower() or "workplane" in err_text.lower():
-                errors.append(
-                    "'{}': Cannot copy workplane-based elements (e.g. Lighting Fixtures) because the active view does not have an active work plane set.\n"
-                    "-> SOLUTION: Switch to a Floor Plan or Ceiling Plan view first, then run this tool.".format(link_instance.Name)
-                )
+            for eid in ids_to_copy:
+                t_single = Transaction(doc, "Copy Single Element")
+                swallower_single = CopyWarningsSwallower()
+                try:
+                    opts_s = t_single.GetFailureHandlingOptions()
+                    opts_s.SetFailuresPreprocessor(swallower_single)
+                    opts_s.SetClearAfterRollback(True)
+                    t_single.SetFailureHandlingOptions(opts_s)
+                    
+                    t_single.Start()
+                    single_list = List[ElementId]()
+                    single_list.Add(eid)
+                    
+                    copied_single = ElementTransformUtils.CopyElements(
+                        link_doc, single_list, doc, transform, copy_options
+                    )
+                    t_single.Commit()
+                    successful_copies += len(list(copied_single))
+                except Exception:
+                    if t_single.HasStarted():
+                        t_single.RollBack()
+                    single_errors += 1
+            
+            if successful_copies > 0:
+                total_copied += successful_copies
+                if single_errors > 0:
+                    errors.append("'{}': Batch copy failed, but successfully copied {} elements individually. ({} elements failed to copy)".format(
+                        link_instance.Name, successful_copies, single_errors
+                    ))
             else:
-                errors.append("'{}': {}".format(link_instance.Name, err_text))
+                err_text = swallower.error_message if swallower.error_message else str(ex)
+                
+                # Check for workplane hosting errors (common with Lighting Fixtures, Mech Equipment, etc.)
+                if "work plane" in err_text.lower() or "workplane" in err_text.lower():
+                    errors.append(
+                        "'{}': Cannot copy workplane-based elements (e.g. Lighting Fixtures) because the active view does not have an active work plane set.\n"
+                        "-> SOLUTION: Switch to a Floor Plan or Ceiling Plan view first, then run this tool.".format(link_instance.Name)
+                    )
+                else:
+                    errors.append("'{}': Copying elements failed completely. Error: {}".format(link_instance.Name, err_text))
 
     if total_copied > 0 or not errors:
         msg = "Elements copied successfully!\n\n"
