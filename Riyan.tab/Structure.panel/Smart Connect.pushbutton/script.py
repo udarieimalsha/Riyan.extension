@@ -18,7 +18,7 @@ clr.AddReference('PresentationFramework')
 clr.AddReference('PresentationCore')
 clr.AddReference('WindowsBase')
 
-from Autodesk.Revit.DB import FilteredElementCollector, ElementIntersectsElementFilter, Transaction, BuiltInCategory, ElementId
+from Autodesk.Revit.DB import FilteredElementCollector, ElementIntersectsElementFilter, Transaction, BuiltInCategory, ElementId, Color, OverrideGraphicSettings
 from Autodesk.Revit.DB.Structure import StructuralConnectionHandler, StructuralConnectionHandlerType
 from Autodesk.Revit.UI.Selection import ObjectType, ISelectionFilter
 import System.Windows.Controls as Controls
@@ -116,6 +116,70 @@ XAML = """
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style TargetType="TreeView">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style TargetType="TreeViewItem">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TreeViewItem">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Border Name="NodeBorder" Background="Transparent" Padding="{TemplateBinding Padding}" CornerRadius="3">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ToggleButton Name="Expander" ClickMode="Press"
+                                                  IsChecked="{Binding Path=IsExpanded, RelativeSource={RelativeSource TemplatedParent}}">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Border Background="Transparent" Width="16" Height="16">
+                                                    <Path Name="Arrow" Data="M 4 2 L 8 6 L 4 10 Z" Fill="#888888" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" Width="6"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Arrow" Property="Fill" Value="White"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsChecked" Value="True">
+                                                        <Setter TargetName="Arrow" Property="Data" Value="M 2 4 L 10 4 L 6 8 Z"/>
+                                                        <Setter TargetName="Arrow" Property="Fill" Value="#802F2D"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
+                                    <ContentPresenter Name="PART_Header" Grid.Column="1" ContentSource="Header" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+                            <ItemsPresenter Name="ItemsHost" Grid.Row="1" Margin="20,0,0,0"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasItems" Value="False">
+                                <Setter TargetName="Expander" Property="Visibility" Value="Hidden"/>
+                            </Trigger>
+                            <Trigger Property="IsExpanded" Value="False">
+                                <Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="NodeBorder" Property="Background" Value="#2A0A0A"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" SourceName="NodeBorder" Value="True">
+                                <Setter TargetName="NodeBorder" Property="Background" Value="#1A1A1A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Border BorderBrush="#333333" BorderThickness="1">
@@ -170,9 +234,7 @@ XAML = """
                 </Grid>
                 
                 <Border Height="360" BorderBrush="#333333" BorderThickness="1" Margin="0,0,0,10">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel x:Name="Panel_Elements" Margin="10"/>
-                    </ScrollViewer>
+                    <TreeView x:Name="Tree_Elements" Background="Transparent" BorderThickness="0" Padding="5"/>
                 </Border>
                 <TextBlock x:Name="Txt_Status" Text="0 elements selected" Foreground="#AAAAAA" FontSize="11" HorizontalAlignment="Right"/>
             </StackPanel>
@@ -233,7 +295,7 @@ class ConnectionWindow(WPF.Window):
         # UI Elements
         self.header_bar = self.ui.FindName("HeaderBar")
         self.combo_type = self.ui.FindName("Combo_ConnectionType")
-        self.panel_elements = self.ui.FindName("Panel_Elements")
+        self.tree_elements = self.ui.FindName("Tree_Elements")
         self.txt_status = self.ui.FindName("Txt_Status")
         self.btn_run = self.ui.FindName("Btn_Run")
         self.txt_main = self.ui.FindName("Txt_MainElement")
@@ -292,32 +354,82 @@ class ConnectionWindow(WPF.Window):
         if connection_types:
             self.combo_type.SelectedIndex = 0
             
-        # Populate List
-        self.checkboxes = []
+        # Populate List in TreeView
+        self.parent_checkboxes = {}
+        self.child_checkboxes = []
+        self._updating_tree = False
+
+        # Group elements by category
+        categories_map = {}
         for el in self.intersecting_elements:
             try:
-                cat_name = el.Category.Name if el.Category else "Unknown"
+                cat_name = el.Category.Name if el.Category else "Unknown Category"
             except:
-                cat_name = "Unknown"
-                
-            try:
-                el_name = el.Name
-            except:
-                el_name = "Unnamed"
-                
-            disp_name = "{} - {} [{}]".format(cat_name, el_name, el.Id)
+                cat_name = "Unknown Category"
+            if cat_name not in categories_map:
+                categories_map[cat_name] = []
+            categories_map[cat_name].append(el)
+
+        # Populate TreeView
+        for cat_name in sorted(categories_map.keys()):
+            elements = categories_map[cat_name]
             
-            cb = Controls.CheckBox()
-            cb.Content = disp_name
-            cb.Foreground = Media.Brushes.White
-            cb.IsChecked = True
-            cb.Margin = WPF.Thickness(0,2,0,2)
-            cb.Tag = el
-            cb.Checked += self.UpdateStatus
-            cb.Unchecked += self.UpdateStatus
+            # Create Parent TreeViewItem
+            parent_item = Controls.TreeViewItem()
+            parent_item.IsExpanded = True  # Keep expanded by default
             
-            self.panel_elements.Children.Add(cb)
-            self.checkboxes.append(cb)
+            # Create Parent CheckBox
+            parent_cb = Controls.CheckBox()
+            parent_cb.Content = "{} ({})".format(cat_name, len(elements))
+            parent_cb.Foreground = Media.Brushes.White
+            parent_cb.IsChecked = False
+            parent_cb.IsThreeState = False
+            parent_cb.Margin = WPF.Thickness(0,2,0,2)
+            parent_cb.Tag = cat_name  # Temporarily store category name
+            
+            # Register event handlers for parent CheckBox
+            parent_cb.Checked += self.OnParentChecked
+            parent_cb.Unchecked += self.OnParentChecked
+            
+            parent_item.Header = parent_cb
+            self.parent_checkboxes[cat_name] = parent_cb
+            
+            # List to keep track of this category's child checkboxes
+            category_child_cbs = []
+            
+            for el in elements:
+                # Create Child TreeViewItem
+                child_item = Controls.TreeViewItem()
+                
+                # Get element name
+                try:
+                    el_name = el.Name
+                except:
+                    el_name = "Unnamed"
+                disp_name = "{} [{}]".format(el_name, el.Id)
+                
+                # Create Child CheckBox
+                child_cb = Controls.CheckBox()
+                child_cb.Content = disp_name
+                child_cb.Foreground = Media.Brushes.White
+                child_cb.IsChecked = False
+                child_cb.Margin = WPF.Thickness(0,2,0,2)
+                child_cb.Tag = el  # Store Revit element in Tag
+                
+                # Register event handlers for child CheckBox
+                child_cb.Checked += self.OnChildChecked
+                child_cb.Unchecked += self.OnChildChecked
+                
+                child_item.Header = child_cb
+                parent_item.Items.Add(child_item)
+                
+                self.child_checkboxes.append(child_cb)
+                category_child_cbs.append(child_cb)
+                
+            # Store children reference inside parent checkbox Tag
+            parent_cb.Tag = {"category": cat_name, "children": category_child_cbs}
+            
+            self.tree_elements.Items.Add(parent_item)
             
         self.UpdateStatus(None, None)
         load_logo(self.ui.FindName("UI_Logo"), MASTER_LOGO)
@@ -327,17 +439,161 @@ class ConnectionWindow(WPF.Window):
             helper.Owner = revit.handle
         except: pass
         
+        # Track all highlighted elements for cleanup
+        self._highlighted_ids = set()
+        
+        # Highlight main element in green immediately
+        self._apply_highlight([main_element.Id], Color(0, 200, 80), is_main=True)
+        
+        # Subscribe to window closed event to clear all highlights
+        self.ui.Closed += self.OnWindowClosed
+        
         self.result = None
 
+    def _apply_highlight(self, element_ids, color, is_main=False):
+        """Apply a solid color graphic override to a list of element IDs in the active view."""
+        try:
+            ogs = OverrideGraphicSettings()
+            ogs.SetProjectionLineColor(color)
+            ogs.SetSurfaceForegroundPatternColor(color)
+            ogs.SetSurfaceForegroundPatternVisible(True)
+            ogs.SetProjectionLineWeight(5 if is_main else 4)
+            
+            active_view = uidoc.ActiveView
+            with Transaction(doc, "SC Highlight") as t:
+                t.Start()
+                for eid in element_ids:
+                    active_view.SetElementOverrides(eid, ogs)
+                    self._highlighted_ids.add(eid)
+                t.Commit()
+        except:
+            pass
+
+    def _clear_highlight(self, element_ids):
+        """Remove graphic overrides from a list of element IDs in the active view."""
+        try:
+            ogs = OverrideGraphicSettings()  # Default = no override
+            active_view = uidoc.ActiveView
+            with Transaction(doc, "SC Clear Highlight") as t:
+                t.Start()
+                for eid in element_ids:
+                    active_view.SetElementOverrides(eid, ogs)
+                    self._highlighted_ids.discard(eid)
+                t.Commit()
+        except:
+            pass
+
+    def clear_all_highlights(self):
+        """Clear all graphic overrides applied by this tool."""
+        try:
+            if not self._highlighted_ids:
+                return
+            ogs = OverrideGraphicSettings()
+            active_view = uidoc.ActiveView
+            with Transaction(doc, "SC Clear All Highlights") as t:
+                t.Start()
+                for eid in list(self._highlighted_ids):
+                    active_view.SetElementOverrides(eid, ogs)
+                t.Commit()
+            self._highlighted_ids.clear()
+        except:
+            pass
+
+    def _refresh_child_highlights(self):
+        """Sync highlight state for all child checkboxes."""
+        try:
+            to_highlight = []
+            to_clear = []
+            for cb in self.child_checkboxes:
+                el = cb.Tag
+                if cb.IsChecked == True:
+                    to_highlight.append(el.Id)
+                else:
+                    to_clear.append(el.Id)
+            if to_highlight:
+                self._apply_highlight(to_highlight, Color(220, 50, 50))
+            if to_clear:
+                self._clear_highlight(to_clear)
+        except:
+            pass
+
+    def OnWindowClosed(self, sender, args):
+        self.clear_all_highlights()
+
+    def OnParentChecked(self, sender, args):
+        if self._updating_tree: return
+        self._updating_tree = True
+        
+        try:
+            parent_cb = sender
+            is_checked = parent_cb.IsChecked
+            if is_checked is None:
+                is_checked = False
+            
+            children = parent_cb.Tag["children"]
+            for child_cb in children:
+                child_cb.IsChecked = is_checked
+        finally:
+            self._updating_tree = False
+        
+        self._refresh_child_highlights()
+        self.UpdateStatus(None, None)
+
+    def OnChildChecked(self, sender, args):
+        if self._updating_tree: return
+        self._updating_tree = True
+        
+        try:
+            for parent_cb in self.parent_checkboxes.values():
+                children = parent_cb.Tag["children"]
+                checked_count = sum(1 for c in children if c.IsChecked == True)
+                
+                if checked_count == 0:
+                    parent_cb.IsChecked = False
+                elif checked_count == len(children):
+                    parent_cb.IsChecked = True
+                else:
+                    parent_cb.IsChecked = None
+        finally:
+            self._updating_tree = False
+        
+        # Highlight just the toggled element
+        toggled_cb = sender
+        el = toggled_cb.Tag
+        if toggled_cb.IsChecked == True:
+            self._apply_highlight([el.Id], Color(220, 50, 50))
+        else:
+            self._clear_highlight([el.Id])
+            
+        self.UpdateStatus(None, None)
+
     def UpdateStatus(self, sender, args):
-        count = sum(1 for cb in self.checkboxes if cb.IsChecked == True)
+        count = sum(1 for cb in self.child_checkboxes if cb.IsChecked == True)
         self.txt_status.Text = "{} elements selected".format(count)
 
     def OnSelectAll(self, sender, args):
-        for cb in self.checkboxes: cb.IsChecked = True
+        self._updating_tree = True
+        try:
+            for cb in self.child_checkboxes:
+                cb.IsChecked = True
+            for parent_cb in self.parent_checkboxes.values():
+                parent_cb.IsChecked = True
+        finally:
+            self._updating_tree = False
+        self._refresh_child_highlights()
+        self.UpdateStatus(None, None)
 
     def OnClear(self, sender, args):
-        for cb in self.checkboxes: cb.IsChecked = False
+        self._updating_tree = True
+        try:
+            for cb in self.child_checkboxes:
+                cb.IsChecked = False
+            for parent_cb in self.parent_checkboxes.values():
+                parent_cb.IsChecked = False
+        finally:
+            self._updating_tree = False
+        self._refresh_child_highlights()
+        self.UpdateStatus(None, None)
 
     def OnCancel(self, sender, args):
         self.ui.Close()
@@ -349,7 +605,7 @@ class ConnectionWindow(WPF.Window):
             return
 
         selected_elements = []
-        for cb in self.checkboxes:
+        for cb in self.child_checkboxes:
             if cb.IsChecked == True:
                 selected_elements.append(cb.Tag)
                 
