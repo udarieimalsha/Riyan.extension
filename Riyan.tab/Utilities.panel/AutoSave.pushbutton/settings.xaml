@@ -1,0 +1,129 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AutoSave Settings" Height="180" Width="380" WindowStartupLocation="CenterScreen"
+        Background="Black" WindowStyle="None" AllowsTransparency="False">
+    
+    <Window.Resources>
+        <!-- Primary Button Style -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#802F2D"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#993836"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Secondary Button Style -->
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#AAAAAA"/>
+            <Setter Property="BorderBrush" Value="#444444"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#2A2A2A"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32"/> <!-- Title Bar -->
+            <RowDefinition Height="*"/>    <!-- Content -->
+            <RowDefinition Height="Auto"/> <!-- Footer -->
+        </Grid.RowDefinitions>
+
+        <!-- TITLE BAR -->
+        <Grid Grid.Row="0" Background="#1A1A1A" MouseLeftButtonDown="TitleBar_MouseDown">
+            <TextBlock Text="AutoSave Configuration" Foreground="#BBBBBB" FontSize="11" VerticalAlignment="Center" Margin="15,0,0,0"/>
+            <Button x:Name="CloseBtn" Content="✕" HorizontalAlignment="Right" Width="45" Height="32" Background="Transparent" Foreground="#888888" BorderThickness="0" Click="CancelButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#E81123"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </Grid>
+
+        <!-- CONTENT -->
+        <Grid Grid.Row="1" Margin="20,15,20,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Clock icon or label -->
+            <TextBlock Grid.Column="0" Grid.Row="0" Text="🕒" Foreground="#802F2D" FontSize="26" VerticalAlignment="Center" Margin="0,0,15,0"/>
+            
+            <StackPanel Grid.Column="1" Grid.Row="0" VerticalAlignment="Center">
+                <TextBlock Text="Save Interval" Foreground="White" FontSize="13" FontWeight="Bold" Margin="0,0,0,2"/>
+                <TextBlock Text="Enter the duration between saves (in minutes):" Foreground="#888888" FontSize="10"/>
+            </StackPanel>
+
+            <!-- Input area -->
+            <Grid Grid.Column="1" Grid.Row="1" Margin="0,15,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBox x:Name="IntervalInput" Grid.Column="0" Height="28" Background="#222222" Foreground="White" BorderBrush="#444444" BorderThickness="1" VerticalContentAlignment="Center" Padding="5,0" Margin="0,0,10,0" CaretBrush="White"/>
+                <TextBlock Grid.Column="1" Text="minutes" Foreground="LightGray" VerticalAlignment="Center" FontSize="12"/>
+            </Grid>
+        </Grid>
+
+        <!-- FOOTER -->
+        <Border Grid.Row="2" Background="#0A0A0A" Padding="15,12">
+            <DockPanel LastChildFill="False">
+                <Button x:Name="SaveButton" Content="Save Settings" Style="{StaticResource PrimaryButtonStyle}" Width="120" DockPanel.Dock="Right" Click="SaveButton_Click"/>
+                <Button x:Name="CancelButton" Content="Cancel" Style="{StaticResource SecondaryButtonStyle}" Width="85" Margin="0,0,10,0" DockPanel.Dock="Right" Click="CancelButton_Click"/>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

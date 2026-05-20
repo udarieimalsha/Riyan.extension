@@ -567,11 +567,22 @@ class CustomMessageBox:
 # Failure Handling (Suppress warnings like "inserts outside of hosts")
 # ---------------------------------------------------------------------------
 class CopyWarningsSwallower(IFailuresPreprocessor):
+    def __init__(self):
+        self.error_message = None
+
     def PreprocessFailures(self, failuresAccessor):
         fail_list = failuresAccessor.GetFailureMessages()
+        has_error = False
         for f in fail_list:
-            if f.GetSeverity() == FailureSeverity.Warning:
+            severity = f.GetSeverity()
+            if severity == FailureSeverity.Warning:
                 failuresAccessor.DeleteWarning(f)
+            elif severity == FailureSeverity.Error:
+                has_error = True
+                self.error_message = f.GetDescriptionText()
+        
+        if has_error:
+            return FailureProcessingResult.ProceedWithRollBack
         return FailureProcessingResult.Continue
 
 
@@ -639,10 +650,12 @@ def run():
 
         # 2. Attempt Copy
         t = Transaction(doc, "Copy from Link: {}".format(link_instance.Name))
+        swallower = CopyWarningsSwallower()
         try:
-            # Suppress warnings (especially for hosted elements)
+            # Suppress warnings and handle errors silently on rollback
             opts = t.GetFailureHandlingOptions()
-            opts.SetFailuresPreprocessor(CopyWarningsSwallower())
+            opts.SetFailuresPreprocessor(swallower)
+            opts.SetClearAfterRollback(True)
             t.SetFailureHandlingOptions(opts)
             
             t.Start()
@@ -655,7 +668,17 @@ def run():
         except Exception as ex:
             if t.HasStarted():
                 t.RollBack()
-            errors.append("'{}': {}".format(link_instance.Name, str(ex)))
+                
+            err_text = swallower.error_message if swallower.error_message else str(ex)
+            
+            # Check for workplane hosting errors (common with Lighting Fixtures, Mech Equipment, etc.)
+            if "work plane" in err_text.lower() or "workplane" in err_text.lower():
+                errors.append(
+                    "'{}': Cannot copy workplane-based elements (e.g. Lighting Fixtures) because the active view does not have an active work plane set.\n"
+                    "-> SOLUTION: Switch to a Floor Plan or Ceiling Plan view first, then run this tool.".format(link_instance.Name)
+                )
+            else:
+                errors.append("'{}': {}".format(link_instance.Name, err_text))
 
     if total_copied > 0 or not errors:
         msg = "Elements copied successfully!\n\n"

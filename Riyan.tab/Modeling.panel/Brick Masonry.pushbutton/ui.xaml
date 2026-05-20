@@ -22,8 +22,18 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Border Padding="20">
                 <StackPanel>
-                    <!-- Block Dimensions -->
-                    <TextBlock Text="Block Dimensions (mm)" FontWeight="Bold" Margin="0,0,0,10" Foreground="#333"/>
+                <!-- Block Selection -->
+                <TextBlock Text="Block Selection" FontWeight="Bold" Margin="0,0,0,10" Foreground="#333"/>
+                <ComboBox x:Name="cb_block_type" SelectedIndex="0" Padding="5" Margin="0,0,0,15" SelectionChanged="cb_block_type_SelectionChanged">
+                    <ComboBoxItem Content="Standard Brick (215x102.5x65)"/>
+                    <ComboBoxItem Content="Solid Concrete Block (440x100x215)"/>
+                    <ComboBoxItem Content="Hollow Concrete Block (440x215x215)"/>
+                    <ComboBoxItem Content="Paving Block (200x100x60)"/>
+                    <ComboBoxItem Content="Custom..."/>
+                </ComboBox>
+
+                <!-- Block Dimensions -->
+                <TextBlock Text="Block Dimensions (mm)" FontWeight="Bold" Margin="0,0,0,10" Foreground="#333"/>
                 <Grid Margin="0,0,0,20">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -44,18 +54,14 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- Wall Settings -->
-                <TextBlock Text="Wall Settings" FontWeight="Bold" Margin="0,0,0,10" Foreground="#333"/>
-                <StackPanel Margin="0,0,0,20">
-                    <TextBlock Text="Wall Height (mm)" FontSize="11" Foreground="#666"/>
-                    <TextBox x:Name="txt_wall_height" Text="3000" Padding="5" Margin="0,2,0,0"/>
-                </StackPanel>
-
                 <!-- Bond Pattern -->
                 <TextBlock Text="Bond Pattern" FontWeight="Bold" Margin="0,0,0,10" Foreground="#333"/>
                 <ComboBox x:Name="cb_pattern" SelectedIndex="0" Padding="5" Margin="0,0,0,20">
                     <ComboBoxItem Content="Running Bond (Stretcher)"/>
                     <ComboBoxItem Content="Stack Bond"/>
+                    <ComboBoxItem Content="English Bond"/>
+                    <ComboBoxItem Content="Flemish Bond"/>
+                    <ComboBoxItem Content="Common Bond (Header every 6th)"/>
                 </ComboBox>
 
                 <!-- Mortar Settings -->
