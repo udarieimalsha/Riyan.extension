@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 Smart Connect
-Author: Antigravity AI
+Author: Chalana Perera
 Select a main element and quickly place structural connections to intersecting elements.
 """
 __title__ = "Smart Connect"
-__author__ = "Antigravity AI"
+__author__ = "Chalana Perera"
 
 import clr
 import os
