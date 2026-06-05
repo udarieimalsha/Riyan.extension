@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Smart Connect
-Author: Chalana Perera
-Select a main element and quickly place structural connections to intersecting elements.
-"""
+"""Select a main element and quickly place structural connections to intersecting elements."""
 __title__ = "Smart Connect"
 __author__ = "Chalana Perera"
 
