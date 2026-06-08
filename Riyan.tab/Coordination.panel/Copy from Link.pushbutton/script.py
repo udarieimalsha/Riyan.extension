@@ -46,10 +46,10 @@ MAROON      = "#7B2C2C"
 MAROON_DARK = "#621F1F"
 MAROON_LITE = "#9B3C3C"
 
-def get_categories_in_links(link_instances):
-    """Return sorted list of (IntegerValue, name) tuples for all
-    model categories that appear in any of the provided link instances.
-    Excludes non-physical and system categories."""
+def get_hierarchy_in_links(link_instances):
+    """Scan selected Revit links and return a nested dictionary of Category -> Family -> Types
+    present as instances in the links.
+    Excludes non-physical and system categories. Uses a type cache for performance."""
     
     EXCLUDE_CATS = {
         "Materials", "Material Assets", "Internal Origin",
@@ -62,17 +62,20 @@ def get_categories_in_links(link_instances):
         "Railing Rail Path Extension Lines", "Topography", "Center lines"
     }
 
-    seen = {} # {IntegerValue: Name}
+    hierarchy = {} # {cat_name: {"cat_val": cat_val, "families": {fam_name: set(type_names)}}}
+
     for li in link_instances:
         link_doc = li.GetLinkDocument()
         if not link_doc:
             continue
             
-        # Only get actual modeled instances (no types, no view-specific 2D detailing)
+        # Get actual model instances (no types, view-independent only)
         collector = FilteredElementCollector(link_doc)\
                     .WhereElementIsNotElementType()\
                     .WhereElementIsViewIndependent()
                     
+        type_cache = {}
+        
         for elem in collector:
             cat = elem.Category
             if cat and cat.CategoryType == CategoryType.Model:
@@ -80,11 +83,37 @@ def get_categories_in_links(link_instances):
                 # Exclude junk/system categories and any hidden ones starting with <
                 if cat_name not in EXCLUDE_CATS and not cat_name.startswith("<"):
                     cat_val = cat.Id.IntegerValue
-                    if cat_val not in seen:
-                        seen[cat_val] = cat_name
+                    
+                    type_id = elem.GetTypeId()
+                    if type_id == ElementId.InvalidElementId:
+                        continue
                         
-    # Return as list of (IntegerValue, Name)
-    return sorted(seen.items(), key=lambda x: x[1])
+                    # Cache GetElement calls to optimize performance
+                    elem_type = type_cache.get(type_id)
+                    if not elem_type:
+                        elem_type = link_doc.GetElement(type_id)
+                        if elem_type:
+                            type_cache[type_id] = elem_type
+                            
+                    if not elem_type:
+                        continue
+                        
+                    fam_name = elem_type.FamilyName or "System Family"
+                    type_name = elem_type.Name or "Unnamed"
+                    
+                    if cat_name not in hierarchy:
+                        hierarchy[cat_name] = {
+                            "cat_val": cat_val,
+                            "families": {}
+                        }
+                        
+                    families = hierarchy[cat_name]["families"]
+                    if fam_name not in families:
+                        families[fam_name] = set()
+                        
+                    families[fam_name].add(type_name)
+                        
+    return hierarchy
 
 # ---------------------------------------------------------------------------
 # WPF Window XAML  — white background, maroon accents
@@ -295,13 +324,15 @@ XAML = """
                 </StackPanel>
             </Grid>
 
-            <!-- Category checkboxes -->
+            <!-- Element Types tree view -->
             <Border Grid.Row="4"
                     BorderBrush="#333333" BorderThickness="1"
                     CornerRadius="5" Background="#111111">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10,6">
-                    <StackPanel x:Name="CategoryPanel"/>
-                </ScrollViewer>
+                <TreeView x:Name="TypeTreeView"
+                          Background="#111111"
+                          Foreground="#E0E0E0"
+                          BorderThickness="0"
+                          Padding="10,6"/>
             </Border>
 
             <!-- Action buttons -->
@@ -322,12 +353,14 @@ XAML = """
 # ---------------------------------------------------------------------------
 class CopyFromLinkWindow(object):
     def __init__(self, link_instances):
-        self.link_instances   = link_instances
-        self.selected_links   = []
-        self.selected_cats    = []
-        self.result           = False
-        self._link_checkboxes = []
-        self._cat_checkboxes  = []
+        self.link_instances    = link_instances
+        self.selected_links    = []
+        self.selected_types    = []
+        self.result            = False
+        self._link_checkboxes  = []
+        self._cat_checkboxes   = []
+        self._type_checkboxes  = []
+        self._is_updating      = False
 
         from System.Windows.Markup import XamlReader
         self.window = XamlReader.Parse(XAML)
@@ -346,7 +379,7 @@ class CopyFromLinkWindow(object):
 
         # Named controls
         self.link_panel   = self.window.FindName("LinkPanel")
-        self.cat_panel    = self.window.FindName("CategoryPanel")
+        self.type_tree    = self.window.FindName("TypeTreeView")
         self.copy_btn     = self.window.FindName("CopyBtn")
         self.cancel_btn   = self.window.FindName("CancelBtn2")
         self.lnk_all_btn  = self.window.FindName("LinkSelectAllBtn")
@@ -383,8 +416,9 @@ class CopyFromLinkWindow(object):
         self.cancel_btn.Click   += self._on_cancel
 
     def _refresh_categories(self):
-        self.cat_panel.Children.Clear()
+        self.type_tree.Items.Clear()
         self._cat_checkboxes = []
+        self._type_checkboxes = []
         
         selected_link_objs = []
         for i, cb in enumerate(self._link_checkboxes):
@@ -392,24 +426,150 @@ class CopyFromLinkWindow(object):
                 selected_link_objs.append(self.link_instances[i])
         
         if not selected_link_objs:
-            lbl = Controls.TextBlock()
-            lbl.Text = "Select at least one link to see element types."
-            lbl.Foreground = Media.SolidColorBrush(Media.Colors.Gray)
-            lbl.FontSize = 11
-            self.cat_panel.Children.Add(lbl)
+            tvi = Controls.TreeViewItem()
+            tvi.Header = "Select at least one link to see family types."
+            tvi.Foreground = Media.SolidColorBrush(Media.Colors.Gray)
+            tvi.FontSize = 11
+            tvi.Focusable = False
+            self.type_tree.Items.Add(tvi)
             return
 
-        cats = get_categories_in_links(selected_link_objs)
+        hierarchy = get_hierarchy_in_links(selected_link_objs)
+        if not hierarchy:
+            tvi = Controls.TreeViewItem()
+            tvi.Header = "No model elements found in the selected links."
+            tvi.Foreground = Media.SolidColorBrush(Media.Colors.Gray)
+            tvi.FontSize = 11
+            tvi.Focusable = False
+            self.type_tree.Items.Add(tvi)
+            return
+
         check_style = self.window.FindResource("StyledCheck")
         
-        for cat_val, cat_name in cats:
-            cb = Controls.CheckBox()
-            cb.Content   = cat_name
-            cb.Style     = check_style
-            cb.IsChecked = False
-            self.cat_panel.Children.Add(cb)
-            # Store the integer value instead of the ElementId object
-            self._cat_checkboxes.append((cat_val, cb))
+        for cat_name in sorted(hierarchy.keys()):
+            cat_data = hierarchy[cat_name]
+            cat_val = cat_data["cat_val"]
+            families = cat_data["families"]
+            
+            # Create Category node
+            cat_item = Controls.TreeViewItem()
+            cat_item.Focusable = False
+            
+            cat_cb = Controls.CheckBox()
+            cat_cb.Content = cat_name
+            cat_cb.Style = check_style
+            cat_cb.IsChecked = False
+            cat_cb.Tag = {"type": "category", "children": []}
+            
+            cat_item.Header = cat_cb
+            self.type_tree.Items.Add(cat_item)
+            self._cat_checkboxes.append(cat_cb)
+            
+            # Hook up events
+            cat_cb.Checked       += self._on_checkbox_toggled
+            cat_cb.Unchecked     += self._on_checkbox_toggled
+            cat_cb.Indeterminate += self._on_checkbox_toggled
+            
+            for fam_name in sorted(families.keys()):
+                type_names = families[fam_name]
+                
+                # Create Family node
+                fam_item = Controls.TreeViewItem()
+                fam_item.Focusable = False
+                
+                fam_cb = Controls.CheckBox()
+                fam_cb.Content = fam_name
+                fam_cb.Style = check_style
+                fam_cb.IsChecked = False
+                fam_cb.Tag = {"type": "family", "children": [], "parent": cat_cb}
+                
+                fam_item.Header = fam_cb
+                cat_item.Items.Add(fam_item)
+                cat_cb.Tag["children"].append(fam_cb)
+                
+                # Hook up events
+                fam_cb.Checked       += self._on_checkbox_toggled
+                fam_cb.Unchecked     += self._on_checkbox_toggled
+                fam_cb.Indeterminate += self._on_checkbox_toggled
+                
+                for type_name in sorted(type_names):
+                    # Create Type node
+                    type_item = Controls.TreeViewItem()
+                    type_item.Focusable = False
+                    
+                    type_cb = Controls.CheckBox()
+                    type_cb.Content = type_name
+                    type_cb.Style = check_style
+                    type_cb.IsChecked = False
+                    type_cb.Tag = {
+                        "type": "type",
+                        "parent": fam_cb,
+                        "cat_val": cat_val,
+                        "family_name": fam_name,
+                        "type_name": type_name
+                    }
+                    
+                    type_item.Header = type_cb
+                    fam_item.Items.Add(type_item)
+                    fam_cb.Tag["children"].append(type_cb)
+                    self._type_checkboxes.append(type_cb)
+                    
+                    # Hook up events
+                    type_cb.Checked       += self._on_checkbox_toggled
+                    type_cb.Unchecked     += self._on_checkbox_toggled
+                    type_cb.Indeterminate += self._on_checkbox_toggled
+
+    def _on_checkbox_toggled(self, sender, args):
+        if self._is_updating:
+            return
+            
+        self._is_updating = True
+        try:
+            tag = sender.Tag
+            if not tag:
+                return
+                
+            node_type = tag.get("type")
+            is_checked = sender.IsChecked
+            
+            if node_type in ("category", "family"):
+                self._update_children(sender, is_checked)
+                
+            if node_type in ("type", "family"):
+                self._update_parents(sender)
+        finally:
+            self._is_updating = False
+
+    def _update_children(self, cb, is_checked):
+        tag = cb.Tag
+        if not tag:
+            return
+        for child in tag.get("children", []):
+            child.IsChecked = is_checked
+            self._update_children(child, is_checked)
+
+    def _update_parents(self, cb):
+        tag = cb.Tag
+        if not tag:
+            return
+        parent = tag.get("parent")
+        if not parent:
+            return
+            
+        parent_tag = parent.Tag
+        siblings = parent_tag.get("children", [])
+        
+        all_checked = all(s.IsChecked == True for s in siblings)
+        any_checked = any(s.IsChecked == True or s.IsChecked is None for s in siblings)
+        
+        if all_checked:
+            parent.IsChecked = True
+        elif any_checked:
+            parent.IsChecked = None
+        else:
+            parent.IsChecked = False
+            
+        self._update_parents(parent)
 
     def _on_link_toggle(self, sender, args):
         self._refresh_categories()
@@ -420,7 +580,7 @@ class CopyFromLinkWindow(object):
         self._refresh_categories()
 
     def _set_cats_state(self, state):
-        for _, cb in self._cat_checkboxes:
+        for cb in self._cat_checkboxes:
             cb.IsChecked = state
 
     def _on_copy(self, sender, args):
@@ -433,9 +593,14 @@ class CopyFromLinkWindow(object):
             CustomMessageBox.show("Please select at least one Revit Link.", "No Link Selected")
             return
 
-        self.selected_cats = [cat_val for cat_val, cb in self._cat_checkboxes if cb.IsChecked]
-        if not self.selected_cats:
-            CustomMessageBox.show("Please select at least one element type.", "No Element Types Selected")
+        self.selected_types = []
+        for cb in self._type_checkboxes:
+            if cb.IsChecked == True:
+                tag = cb.Tag
+                self.selected_types.append((tag["cat_val"], tag["family_name"], tag["type_name"]))
+                
+        if not self.selected_types:
+            CustomMessageBox.show("Please select at least one family type.", "No Family Types Selected")
             return
 
         # Hosted Elements Check
@@ -443,9 +608,10 @@ class CopyFromLinkWindow(object):
         doors_bic_val = -2000023 # OST_Doors
         wins_bic_val  = -2000014 # OST_Windows
         
-        has_doors = doors_bic_val in self.selected_cats
-        has_wins  = wins_bic_val  in self.selected_cats
-        has_walls = walls_bic_val in self.selected_cats
+        selected_cat_vals = {sig[0] for sig in self.selected_types}
+        has_doors = doors_bic_val in selected_cat_vals
+        has_wins  = wins_bic_val  in selected_cat_vals
+        has_walls = walls_bic_val in selected_cat_vals
         
         if (has_doors or has_wins) and not has_walls:
             warn_msg = "You have selected Doors or Windows WITHOUT selecting Walls.\n\n" \
@@ -594,19 +760,51 @@ def get_link_instances(document):
     return [li for li in collector if li.GetLinkDocument() is not None]
 
 
-def collect_elements_by_categories(link_doc, cat_vals):
-    """Collect all element IDs in link_doc for the given category integer values.
+def collect_elements_by_types(link_doc, selected_types):
+    """Collect all element IDs in link_doc matching the selected (cat_val, family_name, type_name) signatures.
     Returns a simple list of ElementIds."""
     found_ids = List[ElementId]()
+    
+    if not selected_types:
+        return found_ids
+        
+    selected_cat_vals = {sig[0] for sig in selected_types}
     
     # Iterate manually for 100% reliability, enforcing view independence
     all_elements = FilteredElementCollector(link_doc)\
                    .WhereElementIsNotElementType()\
                    .WhereElementIsViewIndependent()
                    
+    type_cache = {}
+    
     for elem in all_elements:
         cat = elem.Category
-        if cat and cat.Id.IntegerValue in cat_vals:
+        if not cat:
+            continue
+            
+        cat_val = cat.Id.IntegerValue
+        if cat_val not in selected_cat_vals:
+            continue
+            
+        type_id = elem.GetTypeId()
+        if type_id == ElementId.InvalidElementId:
+            continue
+            
+        # Optimization: use cache to avoid redundant GetElement calls
+        elem_type = type_cache.get(type_id)
+        if not elem_type:
+            elem_type = link_doc.GetElement(type_id)
+            if elem_type:
+                type_cache[type_id] = elem_type
+                
+        if not elem_type:
+            continue
+            
+        fam_name = elem_type.FamilyName or "System Family"
+        type_name = elem_type.Name or "Unnamed"
+        
+        signature = (cat_val, fam_name, type_name)
+        if signature in selected_types:
             found_ids.Add(elem.Id)
             
     return found_ids
@@ -643,7 +841,7 @@ def run():
         transform = link_instance.GetTotalTransform()
         
         # 1. Collect
-        ids_to_copy = collect_elements_by_categories(link_doc, ui.selected_cats)
+        ids_to_copy = collect_elements_by_types(link_doc, ui.selected_types)
         
         if ids_to_copy.Count == 0:
             continue
