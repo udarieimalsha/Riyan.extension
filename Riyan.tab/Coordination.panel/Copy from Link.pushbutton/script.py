@@ -46,6 +46,38 @@ MAROON      = "#7B2C2C"
 MAROON_DARK = "#621F1F"
 MAROON_LITE = "#9B3C3C"
 
+def get_family_and_type_names(elem_type):
+    """Safely retrieves the family name and type name for a given ElementType."""
+    fam_name = "System Family"
+    type_name = "Unnamed"
+    
+    if not elem_type:
+        return fam_name, type_name
+        
+    try:
+        fn = elem_type.FamilyName
+        if fn:
+            fam_name = fn
+    except Exception:
+        pass
+        
+    try:
+        tn = elem_type.Name
+        if tn:
+            type_name = tn
+    except Exception:
+        try:
+            # Fallback to BuiltInParameter.SYMBOL_NAME_PARAM
+            from Autodesk.Revit.DB import BuiltInParameter
+            p = elem_type.get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM)
+            if p and p.HasValue:
+                type_name = p.AsString()
+        except Exception:
+            pass
+            
+    return fam_name, type_name
+
+
 def get_hierarchy_in_links(link_instances):
     """Scan selected Revit links and return a nested dictionary of Category -> Family -> Types
     present as instances in the links.
@@ -98,8 +130,7 @@ def get_hierarchy_in_links(link_instances):
                     if not elem_type:
                         continue
                         
-                    fam_name = elem_type.FamilyName or "System Family"
-                    type_name = elem_type.Name or "Unnamed"
+                    fam_name, type_name = get_family_and_type_names(elem_type)
                     
                     if cat_name not in hierarchy:
                         hierarchy[cat_name] = {
@@ -800,8 +831,7 @@ def collect_elements_by_types(link_doc, selected_types):
         if not elem_type:
             continue
             
-        fam_name = elem_type.FamilyName or "System Family"
-        type_name = elem_type.Name or "Unnamed"
+        fam_name, type_name = get_family_and_type_names(elem_type)
         
         signature = (cat_val, fam_name, type_name)
         if signature in selected_types:
