@@ -3,8 +3,6 @@ __title__  = "Split Column"
 __author__ = "Chalana Perera"
 __doc__    = """Splits selected structural columns at chosen levels.
 
-Bundle Name: SplitColumn (pushbutton)
-
 Author: Chalana Perera"""
 
 import clr
