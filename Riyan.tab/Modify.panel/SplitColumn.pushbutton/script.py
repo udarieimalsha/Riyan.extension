@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 __title__  = "Split Column"
 __author__ = "Chalana Perera"
-__doc__    = """Splits selected structural columns at chosen levels."""
+__doc__    = """Splits selected structural columns at chosen levels.
+
+Author: Chalana Perera"""
 
 import clr
 clr.AddReference('RevitAPI')
