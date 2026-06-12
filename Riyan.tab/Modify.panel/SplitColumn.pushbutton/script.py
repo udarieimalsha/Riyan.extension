@@ -193,11 +193,13 @@ def safe_set_levels(new_col, sb_id, st_id, sbo, sto):
     p_base_off = new_col.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM)
     p_top_off  = new_col.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM)
 
-    # 1. Throw Top Offset way up to safely bypass Top <= Base constraints
+    # 1. Reset base offset and set top offset to a small positive value to avoid constraints
+    if p_base_off and not p_base_off.IsReadOnly:
+        p_base_off.Set(0.0)
     if p_top_off and not p_top_off.IsReadOnly:
-        p_top_off.Set(50000.0) # 50 meters
+        p_top_off.Set(1.0) # 1 foot (approx. 300mm)
 
-    # 2. Set Levels
+    # 2. Set Levels (set top first to keep top above base)
     if p_top  and not p_top.IsReadOnly: p_top.Set(st_id)
     if p_base and not p_base.IsReadOnly: p_base.Set(sb_id)
 
