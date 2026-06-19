@@ -212,6 +212,7 @@ class ExportManagerForm(forms.WPFWindow):
         self.export_pdf = self.CbPDF.IsChecked
         self.export_dwg = self.CbDWG.IsChecked
         self.naming_rule = self.TxtNamingRule.Text
+        self.split_by_format = self.RbSplitByFormat.IsChecked
 
         # Get selected setups
         pdf_idx = self.CmbPdfSetup.SelectedIndex
@@ -288,6 +289,19 @@ def main():
     selected = form.selected_sheets
     folder = form.export_path
     rule = form.naming_rule
+    split_by_format = form.split_by_format
+
+    # If split by format, create subfolders
+    if split_by_format:
+        pdf_folder = os.path.join(folder, "PDF")
+        dwg_folder = os.path.join(folder, "DWG")
+        if form.export_pdf and not os.path.exists(pdf_folder):
+            os.makedirs(pdf_folder)
+        if form.export_dwg and not os.path.exists(dwg_folder):
+            os.makedirs(dwg_folder)
+    else:
+        pdf_folder = folder
+        dwg_folder = folder
 
     revit_version = int(__revit__.Application.VersionNumber)
 
@@ -299,11 +313,11 @@ def main():
             filename = generate_filename(sheet, rule)
 
             if form.export_dwg:
-                export_dwg(folder, sheet, filename, form.selected_dwg_setting)
+                export_dwg(dwg_folder, sheet, filename, form.selected_dwg_setting)
 
             if form.export_pdf:
                 if revit_version >= 2022:
-                    export_pdf_2022(folder, sheet, filename, form.selected_pdf_setting)
+                    export_pdf_2022(pdf_folder, sheet, filename, form.selected_pdf_setting)
                 else:
                     if idx == 0: # Only alert once
                         forms.alert("Native PDF export requires Revit 2022+. PDFs will be skipped.", title="Version Error")
