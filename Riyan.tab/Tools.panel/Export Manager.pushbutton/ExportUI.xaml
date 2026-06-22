@@ -554,11 +554,24 @@
                                     <!-- Custom File Name Column — Accented Header like ProSheets -->
                                     <DataGridTemplateColumn Width="2.5*" IsReadOnly="True">
                                         <DataGridTemplateColumn.Header>
-                                            <Border Background="#1C1410" BorderBrush="#C8922A" BorderThickness="0,0,0,2"
-                                                    Padding="6,4" Margin="-8,-4,-8,-4">
-                                                <TextBlock Text="Custom File Name" FontSize="11.5" FontWeight="Bold"
-                                                           Foreground="#C8922A" VerticalAlignment="Center"/>
-                                            </Border>
+                                            <Button Click="BtnSaveProfile_Click" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="#1C1410" BorderBrush="#C8922A" BorderThickness="0,0,0,2"
+                                                                Padding="6,4" Margin="-8,-4,-8,-4" x:Name="border">
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <TextBlock Text="Custom File Name" FontSize="11.5" FontWeight="Bold" Foreground="#C8922A" VerticalAlignment="Center"/>
+                                                                <TextBlock Text=" ✎" FontSize="12" Foreground="#C8922A" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="border" Property="Background" Value="#2A1C16"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
                                         </DataGridTemplateColumn.Header>
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
