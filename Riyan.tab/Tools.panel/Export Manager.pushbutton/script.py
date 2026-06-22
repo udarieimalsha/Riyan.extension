@@ -1501,6 +1501,8 @@ def export_dwg(folder, sheet, filename, dwg_setting):
     if dwg_setting:
         opt = dwg_setting.GetDWGExportOptions()
         
+    opt.MergedViews = True
+        
     from System.Collections.Generic import List
     views = List[DB.ElementId]()
     views.Add(sheet.Id)
