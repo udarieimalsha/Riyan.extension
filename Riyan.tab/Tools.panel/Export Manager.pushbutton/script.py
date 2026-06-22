@@ -1187,34 +1187,34 @@ class ExportManagerForm(forms.WPFWindow):
         res = dialog.ShowDialog()
         
         if res == "SaveAs":
-            # Show SaveFileDialog
-            from Microsoft.Win32 import SaveFileDialog
-            dlg = SaveFileDialog()
-            dlg.Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*"
-            dlg.DefaultExt = ".xml"
-            dlg.FileName = (self.CmbProfile.SelectedItem or "Default") + ".xml"
-            
-            if dlg.ShowDialog():
-                save_path = dlg.FileName
-                active = self.CmbProfile.SelectedItem or "Default"
-                settings = load_settings()
-                scheme = settings["schemes"].get(active, [])
+            try:
+                # Show SaveFileDialog
+                from Microsoft.Win32 import SaveFileDialog
+                dlg = SaveFileDialog()
+                dlg.Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*"
+                dlg.DefaultExt = ".xml"
+                dlg.FileName = (self.CmbProfile.SelectedItem or "Default") + ".xml"
                 
-                # Build simple XML
-                import xml.etree.ElementTree as ET
-                root = ET.Element("Profile")
-                name = ET.SubElement(root, "Name")
-                name.text = active
-                rules = ET.SubElement(root, "NamingRules")
-                for part in scheme:
-                    rule = ET.SubElement(rules, "Rule")
-                    rule.set("Type", part["type"])
-                    rule.set("Value", part["value"])
+                if dlg.ShowDialog() == True:
+                    save_path = dlg.FileName
+                    active = self.CmbProfile.SelectedItem or "Default"
+                    settings = load_settings()
+                    scheme = settings["schemes"].get(active, [])
                     
-                tree = ET.ElementTree(root)
-                tree.write(save_path, encoding="utf-8", xml_declaration=True)
-                
-                forms.alert("Profile successfully exported to XML!", title="Export Manager")
+                    # Build simple XML manually to avoid IronPython xml module issues
+                    xml_string = '<?xml version="1.0" encoding="utf-8"?>\n<Profile>\n'
+                    xml_string += '  <Name>{}</Name>\n'.format(active)
+                    xml_string += '  <NamingRules>\n'
+                    for part in scheme:
+                        xml_string += '    <Rule Type="{}" Value="{}" />\n'.format(part["type"], part["value"].replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;'))
+                    xml_string += '  </NamingRules>\n</Profile>'
+                    
+                    with open(save_path, "w") as f:
+                        f.write(xml_string)
+                    
+                    forms.alert("Profile successfully exported to XML!", title="Export Manager")
+            except Exception as ex:
+                forms.alert("Error saving XML: " + str(ex), title="Export Manager")
                 
         elif res == "Save":
             # Saving internally is actually automatic when editing, but we can show a confirmation
