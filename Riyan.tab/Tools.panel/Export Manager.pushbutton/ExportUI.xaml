@@ -476,7 +476,7 @@
                         </Grid>
 
                         <!-- Sheets DataGrid -->
-                        <Border Grid.Row="2" CornerRadius="8" BorderBrush="#222222" BorderThickness="1" ClipToBounds="True">
+                        <Border Grid.Row="1" CornerRadius="8" BorderBrush="#222222" BorderThickness="1" ClipToBounds="True">
                             <DataGrid x:Name="GridSheets" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Extended" BorderThickness="0">
                                 <DataGrid.Columns>
                                     <DataGridTemplateColumn Width="40">
