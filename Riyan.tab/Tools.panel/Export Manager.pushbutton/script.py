@@ -300,6 +300,140 @@ class CustomTextInputWindow(object):
         self.win.ShowDialog()
         return self.result
 
+# ------------------------------------------------------------------------------
+# Custom Profile Save Dialog
+# ------------------------------------------------------------------------------
+class CustomProfileSaveWindow(object):
+    def __init__(self):
+        self.result = None
+        xaml_code = """<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Save Profile" Width="360" SizeToContent="Height"
+        WindowStartupLocation="CenterScreen"
+        Background="#111111" WindowStyle="None" AllowsTransparency="False"
+        ResizeMode="NoResize">
+    <Border BorderBrush="#3A3A3A" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="36"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="46"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Title Bar -->
+            <Grid x:Name="TitleBar" Grid.Row="0" Background="#1A1A1A">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
+                    <TextBlock x:Name="TxtAccent" Text="" Foreground="#802F2D" FontSize="13" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock x:Name="TxtTitle" Text="Save Profile" Foreground="#CCCCCC" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Button x:Name="CloseBtn" Content="" HorizontalAlignment="Right"
+                        Width="44" Height="36" BorderThickness="0" Cursor="Hand"
+                        Background="Transparent" Foreground="#666666"
+                        FontSize="12">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="bd" Background="{TemplateBinding Background}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bd" Property="Background" Value="#C0272D"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </Grid>
+            
+            <!-- Content Area -->
+            <StackPanel Grid.Row="1" Margin="20,16,20,16">
+                <TextBlock Text="This profile will be updated with" Foreground="#CCCCCC" FontSize="11.5" Margin="0,0,0,12"/>
+                <TextBlock Text="- Custom Drawing Number" Foreground="#888888" FontSize="11.5" Margin="0,0,0,4"/>
+                <TextBlock Text="- Format options" Foreground="#888888" FontSize="11.5" Margin="0,0,0,4"/>
+                <TextBlock Text="  PDF, DWG, DGN, DWF/DWFx, NWC, IFC AND IMG" Foreground="#888888" FontSize="11" Margin="0,0,0,8" TextWrapping="Wrap"/>
+            </StackPanel>
+            
+            <!-- Footer -->
+            <Border Grid.Row="2" Background="#0E0E0E" BorderBrush="#222222" BorderThickness="0,1,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="SaveAsBtn" Content="Save As" Width="80" Height="26" Margin="0,0,8,0" Cursor="Hand" Foreground="#AAAAAA" FontSize="11">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" Background="#222222" CornerRadius="3">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bd" Property="Background" Value="#333333"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button x:Name="SaveBtn" Content="Save" Width="80" Height="26" Margin="0,0,14,0" Cursor="Hand" Foreground="White" FontWeight="SemiBold" FontSize="11">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" Background="#802F2D" CornerRadius="3">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bd" Property="Background" Value="#9E3A38"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
+"""
+        r = XmlReader.Create(StringReader(xaml_code))
+        self.win = XamlReader.Load(r)
+        
+        self.TxtAccent = self.win.FindName("TxtAccent")
+        self.CloseBtn = self.win.FindName("CloseBtn")
+        self.SaveAsBtn = self.win.FindName("SaveAsBtn")
+        self.SaveBtn = self.win.FindName("SaveBtn")
+        self.TitleBar = self.win.FindName("TitleBar")
+        
+        if self.TxtAccent:
+            self.TxtAccent.Text = u"\u2B0C"  # ⬌
+        if self.CloseBtn:
+            self.CloseBtn.Content = u"\u2715"  # ✕
+            self.CloseBtn.Click += self.CloseBtn_Click
+        if self.SaveAsBtn:
+            self.SaveAsBtn.Click += self.SaveAsBtn_Click
+        if self.SaveBtn:
+            self.SaveBtn.Click += self.SaveBtn_Click
+        if self.TitleBar:
+            self.TitleBar.MouseLeftButtonDown += self.TitleBar_MouseDown
+            
+    def TitleBar_MouseDown(self, sender, e):
+        try:
+            self.win.DragMove()
+        except:
+            pass
+            
+    def CloseBtn_Click(self, sender, e):
+        self.result = "Cancel"
+        self.win.Close()
+        
+    def SaveAsBtn_Click(self, sender, e):
+        self.result = "SaveAs"
+        self.win.Close()
+        
+    def SaveBtn_Click(self, sender, e):
+        self.result = "Save"
+        self.win.Close()
+
+    def ShowDialog(self):
+        self.win.ShowDialog()
+        return self.result
+
 def show_text_input(title, description):
     try:
         dialog = CustomTextInputWindow(title, description)
@@ -1035,7 +1169,7 @@ class ExportManagerForm(forms.WPFWindow):
             save_settings(settings)
             self.reload_schemes()
 
-    def BtnSaveProfile_Click(self, sender, e):
+    def BtnNamingBuilder_Click(self, sender, e):
         active = self.CmbProfile.SelectedItem or "Default"
         builder_xaml_path = os.path.join(os.path.dirname(__file__), "NamingBuilder.xaml")
         raw_sheets = [sv.Sheet for sv in self.sheets]
@@ -1047,6 +1181,44 @@ class ExportManagerForm(forms.WPFWindow):
             for sv in self.sheets:
                 sv.update_filename(self.active_scheme_parts, doc)
             self.GridSheets.Items.Refresh()
+
+    def BtnSaveProfile_Click(self, sender, e):
+        dialog = CustomProfileSaveWindow()
+        res = dialog.ShowDialog()
+        
+        if res == "SaveAs":
+            # Show SaveFileDialog
+            from Microsoft.Win32 import SaveFileDialog
+            dlg = SaveFileDialog()
+            dlg.Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*"
+            dlg.DefaultExt = ".xml"
+            dlg.FileName = (self.CmbProfile.SelectedItem or "Default") + ".xml"
+            
+            if dlg.ShowDialog():
+                save_path = dlg.FileName
+                active = self.CmbProfile.SelectedItem or "Default"
+                settings = load_settings()
+                scheme = settings["schemes"].get(active, [])
+                
+                # Build simple XML
+                import xml.etree.ElementTree as ET
+                root = ET.Element("Profile")
+                name = ET.SubElement(root, "Name")
+                name.text = active
+                rules = ET.SubElement(root, "NamingRules")
+                for part in scheme:
+                    rule = ET.SubElement(rules, "Rule")
+                    rule.set("Type", part["type"])
+                    rule.set("Value", part["value"])
+                    
+                tree = ET.ElementTree(root)
+                tree.write(save_path, encoding="utf-8", xml_declaration=True)
+                
+                forms.alert("Profile successfully exported to XML!", title="Export Manager")
+                
+        elif res == "Save":
+            # Saving internally is actually automatic when editing, but we can show a confirmation
+            forms.alert("Profile saved successfully.", title="Export Manager")
 
     # Tab 3: Create Logic
     def BtnBrowse_Click(self, sender, e):

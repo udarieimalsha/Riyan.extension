@@ -554,7 +554,7 @@
                                     <!-- Custom File Name Column — Accented Header like ProSheets -->
                                     <DataGridTemplateColumn Width="2.5*" IsReadOnly="True">
                                         <DataGridTemplateColumn.Header>
-                                            <Button Click="BtnSaveProfile_Click" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
+                                            <Button Click="BtnNamingBuilder_Click" Cursor="Hand" Background="Transparent" BorderThickness="0" Padding="0">
                                                 <Button.Template>
                                                     <ControlTemplate TargetType="Button">
                                                         <Border Background="#1C1410" BorderBrush="#C8922A" BorderThickness="0,0,0,2"
