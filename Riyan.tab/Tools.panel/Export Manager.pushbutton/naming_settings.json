@@ -1,42 +1,20 @@
 {
+    "split_by_format": true, 
     "view_sets": {
-        "frfrfr": [
-            "05-100-L00-01", 
-            "05-100-L01-01"
-        ], 
-        "jyukyky": [
-            "05-100-L00-01", 
-            "05-100-L01-01"
-        ], 
-        "nyhnytnyt": [
-            "00-000-000-03", 
-            "05-100-L00-01", 
-            "05-100-L01-01"
-        ], 
-        "lplplplplp": [
-            "00-000-000-03", 
-            "05-100-L00-01", 
-            "05-100-L01-01"
-        ], 
-        "hythytjyuj": [
-            "00-000-000-03", 
-            "05-100-L00-01"
-        ], 
-        "vgergetgtg": [
-            "00-000-000-02", 
-            "00-000-000-03", 
-            "05-100-L00-01"
-        ], 
-        "gd": [
-            "00-000-000-01", 
-            "00-000-000-02", 
-            "00-000-000-03", 
-            "05-100-L00-01"
-        ], 
-        "rgtgtgrtg": [
+        "1811544": [
+            "16-600-000-01", 
+            "19-400-000-01", 
+            "20-400-000-01", 
+            "21-100-L00-01", 
             "21-100-L01-01", 
             "23-100-L00-01", 
             "23-100-L01-01"
+        ], 
+        "uhbggyg": [
+            "00-000-000-02", 
+            "00-000-000-03", 
+            "05-100-L00-01", 
+            "05-100-L01-01"
         ]
     }, 
     "active_scheme": "BOBO", 
@@ -55,37 +33,39 @@
                 "Separator": ""
             }
         ], 
+        "bobo": [], 
         "BOBO": [
             {
                 "ParameterName": "RYN_PrInfo_ProjectNumber", 
-                "Prefix": "", 
                 "Suffix": "", 
+                "Prefix": "", 
                 "Separator": "-RYN-"
             }, 
             {
                 "ParameterName": "RYN_PrInfo_BuildingNumber", 
-                "Prefix": "", 
                 "Suffix": "", 
+                "Prefix": "", 
                 "Separator": "-"
             }, 
             {
                 "ParameterName": "Discipline", 
-                "Prefix": "", 
                 "Suffix": "", 
+                "Prefix": "", 
                 "Separator": "-DWG-"
             }, 
             {
                 "ParameterName": "Sheet Number", 
-                "Prefix": "", 
                 "Suffix": "", 
+                "Prefix": "", 
                 "Separator": " - "
             }, 
             {
                 "ParameterName": "Current Revision", 
-                "Prefix": "", 
                 "Suffix": "", 
+                "Prefix": "", 
                 "Separator": ""
             }
-        ]
+        ], 
+        "gvbtbt": []
     }
 }

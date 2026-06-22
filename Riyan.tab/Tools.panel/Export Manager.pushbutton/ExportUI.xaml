@@ -437,24 +437,20 @@
 
                             <!-- Sheets/Views Radio Buttons -->
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
-                                <RadioButton x:Name="RbSheets" Content="Sheets" Style="{StaticResource DarkRadio}" IsChecked="True"/>
-                                <RadioButton x:Name="RbViews" Content="Views" Style="{StaticResource DarkRadio}" IsEnabled="False"/>
+                                <RadioButton x:Name="RbSheets" Content="Sheets" Style="{StaticResource DarkRadio}" IsChecked="True" Checked="RbMode_Checked"/>
+                                <RadioButton x:Name="RbViews" Content="Views" Style="{StaticResource DarkRadio}" IsEnabled="True" Checked="RbMode_Checked"/>
                             </StackPanel>
 
                             <TextBlock Grid.Column="1" Text="View/Sheet Set" VerticalAlignment="Center" Foreground="#888888" Margin="0,0,8,0" FontWeight="SemiBold"/>
 
-                            <Border Grid.Column="2" Background="#161616" BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <CheckBox Content="Filter by V/S Sets" Style="{StaticResource DarkCheckBox}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="▼" Foreground="#666666" FontSize="8" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
+                            <ComboBox x:Name="CmbFilterSets" Grid.Column="2" Style="{StaticResource DarkComboBox}" Width="150" Margin="0,0,8,0" SelectionChanged="CmbFilterSets_SelectionChanged"/>
 
-                            <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="0,0,8,0">
-                                <ComboBox x:Name="CmbViewSets" Style="{StaticResource DarkComboBox}" Width="120" Margin="0,0,4,0" SelectionChanged="CmbViewSets_SelectionChanged"/>
-                                <Button x:Name="BtnSaveViewSet" Content="💾" Style="{StaticResource SecondaryBtn}" Width="26" Height="26" Margin="0,0,4,0" Click="BtnSaveViewSet_Click" ToolTip="Save selected sheets to this Set"/>
-                                <Button x:Name="BtnDeleteViewSet" Content="🗑" Style="{StaticResource SecondaryBtn}" Width="26" Height="26" Click="BtnDeleteViewSet_Click" ToolTip="Delete selected Set"/>
-                            </StackPanel>
+                            <ComboBox x:Name="CmbSetActions" Grid.Column="3" Style="{StaticResource DarkComboBox}" Width="140" Margin="0,0,8,0" SelectionChanged="CmbSetActions_SelectionChanged">
+                                <ComboBoxItem Content="Unsaved Set" IsSelected="True"/>
+                                <ComboBoxItem Content="New set"/>
+                                <ComboBoxItem Content="Add to Existing"/>
+                                <ComboBoxItem Content="Delete set"/>
+                            </ComboBox>
 
                             <TextBlock Grid.Column="4" Text="☆" Foreground="#C8922A" FontSize="16" VerticalAlignment="Center" Margin="0,0,0,0" ToolTip="Favorites"/>
 

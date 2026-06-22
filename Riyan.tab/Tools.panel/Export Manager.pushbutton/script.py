@@ -490,25 +490,33 @@ def save_settings(settings):
 # View Models
 # ------------------------------------------------------------------------------
 class SheetViewModel(object):
-    def __init__(self, sheet, scheme_parts, doc):
+    def __init__(self, sheet, scheme_parts, doc, is_view=False):
         self.Sheet = sheet
-        self.SheetNumber = sheet.SheetNumber
-        self.SheetName = sheet.Name
+        self.is_view = is_view
         
-        # Get revision
-        p = sheet.get_Parameter(DB.BuiltInParameter.SHEET_CURRENT_REVISION)
-        self.Revision = p.AsString() or p.AsValueString() or "-" if p else "-"
-        
-        # Get Size (from TitleBlock if available)
-        self.Size = ""
-        try:
-            tbs = DB.FilteredElementCollector(doc, sheet.Id).OfCategory(DB.BuiltInCategory.OST_TitleBlocks).ToElements()
-            if tbs:
-                self.Size = tbs[0].Name
-            else:
+        if is_view:
+            self.SheetNumber = str(sheet.ViewType)
+            self.SheetName = sheet.Name
+            self.Revision = "-"
+            self.Size = "-"
+        else:
+            self.SheetNumber = sheet.SheetNumber
+            self.SheetName = sheet.Name
+            
+            # Get revision
+            p = sheet.get_Parameter(DB.BuiltInParameter.SHEET_CURRENT_REVISION)
+            self.Revision = p.AsString() or p.AsValueString() or "-" if p else "-"
+            
+            # Get Size (from TitleBlock if available)
+            self.Size = ""
+            try:
+                tbs = DB.FilteredElementCollector(doc, sheet.Id).OfCategory(DB.BuiltInCategory.OST_TitleBlocks).ToElements()
+                if tbs:
+                    self.Size = tbs[0].Name
+                else:
+                    self.Size = "A1"
+            except:
                 self.Size = "A1"
-        except:
-            self.Size = "A1"
         
         self._is_selected = False
         self._custom_file_name = ""
@@ -718,8 +726,11 @@ def generate_filename(sheet, scheme_parts, doc):
     # Final fallback if name resolves to empty string
     filename = filename.strip()
     if not filename:
-        filename = sheet.SheetNumber + " - " + sheet.Name
-        
+        try:
+            filename = sheet.SheetNumber + " - " + sheet.Name
+        except AttributeError:
+            filename = str(sheet.ViewType) + " - " + sheet.Name
+            
     return filename
 
 # ------------------------------------------------------------------------------
@@ -962,7 +973,7 @@ class NamingBuilderForm(forms.WPFWindow):
 # Export Manager Main Form (Wizard Controller)
 # ------------------------------------------------------------------------------
 class ExportManagerForm(forms.WPFWindow):
-    def __init__(self, xaml_file_name, sheets):
+    def __init__(self, xaml_file_name, sheets, views):
         forms.WPFWindow.__init__(self, xaml_file_name)
         
         # Load naming settings
@@ -975,9 +986,15 @@ class ExportManagerForm(forms.WPFWindow):
         self.TxtExportPath.Text = self.export_path
         
         # Wrap sheets into ViewModels
-        self.sheets = [SheetViewModel(s, self.active_scheme_parts, doc) for s in sheets]
+        self.sheets = [SheetViewModel(s, self.active_scheme_parts, doc, is_view=False) for s in sheets]
         self.sheets.sort(key=lambda x: x.SheetNumber)
-        self.GridSheets.ItemsSource = self.sheets
+        
+        # Wrap views into ViewModels
+        self.views = [SheetViewModel(v, self.active_scheme_parts, doc, is_view=True) for v in views]
+        self.views.sort(key=lambda x: x.SheetName)
+        
+        self.current_items = self.sheets
+        self.GridSheets.ItemsSource = self.current_items
         
         # Populate Setups
         self.print_settings = list(DB.FilteredElementCollector(doc).OfClass(DB.PrintSetting).ToElements())
@@ -1030,68 +1047,151 @@ class ExportManagerForm(forms.WPFWindow):
         
         self.viewset_names = list(self.viewsets_dict.keys())
         self.viewset_names.sort()
-        self.viewset_names.insert(0, "Unsaved Set")
-        self.CmbViewSets.ItemsSource = self.viewset_names
-        self.CmbViewSets.SelectedIndex = 0
         
-    def CmbViewSets_SelectionChanged(self, sender, e):
-        idx = self.CmbViewSets.SelectedIndex
-        if idx <= 0: return # Unsaved set
+        # Populate the Filter dropdown: first item is a label, then saved sets
+        filter_items = ["-- Filter by V/S Set --"] + self.viewset_names
+        self.CmbFilterSets.ItemsSource = filter_items
+        self.CmbFilterSets.SelectedIndex = 0
+    
+    def RbMode_Checked(self, sender, e):
+        """Switch the DataGrid between Sheets and Views."""
+        if not hasattr(self, "sheets") or not hasattr(self, "views"):
+            return
+        if self.RbViews.IsChecked:
+            self.current_items = self.views
+        else:
+            self.current_items = self.sheets
+        self.GridSheets.ItemsSource = None
+        self.GridSheets.ItemsSource = self.current_items
+        self.update_selection_stats()
+
+    def CmbFilterSets_SelectionChanged(self, sender, e):
+        """Filter/select items in the grid based on the chosen saved set."""
+        # Guard: event can fire during XAML loading before __init__ completes
+        if not hasattr(self, "current_items") or not hasattr(self, "viewsets_dict"):
+            return
+        idx = self.CmbFilterSets.SelectedIndex
+        if idx <= 0:
+            # "-- Filter by V/S Set --" selected – clear filter (deselect all)
+            for sv in self.current_items:
+                sv.IsSelected = False
+            self.GridSheets.Items.Refresh()
+            self.update_selection_stats()
+            return
         
-        set_name = self.CmbViewSets.SelectedItem
-        if not set_name: return
+        set_name = self.viewset_names[idx - 1]  # offset for the label item
+        set_numbers = self.viewsets_dict.get(set_name, [])
         
-        set_sheet_numbers = self.viewsets_dict.get(set_name, [])
+        for sv in self.current_items:
+            sv.IsSelected = (sv.SheetNumber in set_numbers)
         
-        for sv in self.sheets:
-            sv.IsSelected = (sv.SheetNumber in set_sheet_numbers)
-            
         self.GridSheets.Items.Refresh()
         self.update_selection_stats()
 
-    def BtnSaveViewSet_Click(self, sender, e):
-        # Gather selected sheets
-        selected_vms = [sv for sv in self.sheets if sv.IsSelected]
-        if not selected_vms:
-            show_alert("No sheets selected to save.", is_warning=True)
+    def CmbSetActions_SelectionChanged(self, sender, e):
+        """Handle action ComboBox: New set / Add to Existing / Delete set."""
+        # Guard: this event can fire during XAML loading before __init__ completes
+        if not hasattr(self, "CmbSetActions") or not hasattr(self, "current_items"):
             return
-            
-        set_name = show_text_input("Save View/Sheet Set", "Enter name for the new set:")
-        if not set_name: return
-        
+        cmb = self.CmbSetActions
+        item = cmb.SelectedItem
+        if item is None:
+            return
+        try:
+            label = item.Content if hasattr(item, "Content") else str(item)
+        except:
+            label = str(item)
+
+        if label == "Unsaved Set":
+            return
+
+        # Reset back to "Unsaved Set" after action resolves
+        try:
+            if label == "New set":
+                self._action_new_set()
+            elif label == "Add to Existing":
+                self._action_add_to_existing()
+            elif label == "Delete set":
+                self._action_delete_set()
+        finally:
+            cmb.SelectedIndex = 0
+
+    def _action_new_set(self):
+        """Save currently selected items as a new named set."""
+        selected_vms = [sv for sv in self.current_items if sv.IsSelected]
+        if not selected_vms:
+            show_alert("No items selected to save.", is_warning=True)
+            return
+
+        set_name = show_text_input("New View/Sheet Set", "Enter a name for the new set:")
+        if not set_name:
+            return
+
         try:
             settings = load_settings()
             if "view_sets" not in settings:
                 settings["view_sets"] = {}
-                
-            # Save by SheetNumber for resilience
+
             sheet_numbers = [sv.SheetNumber for sv in selected_vms]
             settings["view_sets"][set_name] = sheet_numbers
-            
             save_settings(settings)
-            show_alert("Successfully saved set '{}'".format(set_name))
+            show_alert("Set '{}' saved successfully.".format(set_name))
             self.load_viewsets()
-            self.CmbViewSets.SelectedItem = set_name
-            
+            # Select the new set in the filter dropdown
+            try:
+                self.CmbFilterSets.SelectedIndex = self.viewset_names.index(set_name) + 1
+            except ValueError:
+                pass
         except Exception as ex:
             show_alert("Failed to save set:\n" + str(ex), is_error=True)
-            
-    def BtnDeleteViewSet_Click(self, sender, e):
-        idx = self.CmbViewSets.SelectedIndex
-        if idx <= 0:
-            show_alert("Cannot delete Unsaved Set.", is_warning=True)
+
+    def _action_add_to_existing(self):
+        """Add currently selected items to an already saved set."""
+        if not self.viewset_names:
+            show_alert("No saved sets found. Create a 'New set' first.", is_warning=True)
             return
-            
-        set_name = self.CmbViewSets.SelectedItem
-        if not set_name: return
-        
+
+        selected_vms = [sv for sv in self.current_items if sv.IsSelected]
+        if not selected_vms:
+            show_alert("No items selected to add.", is_warning=True)
+            return
+
+        # Ask user which set to add to via a simple text input with hint
+        hint = "Saved sets: " + ", ".join(self.viewset_names)
+        set_name = show_text_input("Add to Existing Set", "Enter the set name to add to:\n({})".format(hint))
+        if not set_name:
+            return
+        if set_name not in self.viewsets_dict:
+            show_alert("Set '{}' not found.".format(set_name), is_warning=True)
+            return
+
+        try:
+            settings = load_settings()
+            existing = settings["view_sets"].get(set_name, [])
+            new_numbers = [sv.SheetNumber for sv in selected_vms]
+            merged = list(set(existing + new_numbers))
+            settings["view_sets"][set_name] = merged
+            save_settings(settings)
+            show_alert("Added {} item(s) to set '{}'.".format(len(new_numbers), set_name))
+            self.load_viewsets()
+        except Exception as ex:
+            show_alert("Failed to update set:\n" + str(ex), is_error=True)
+
+    def _action_delete_set(self):
+        """Delete the set currently selected in the Filter dropdown."""
+        idx = self.CmbFilterSets.SelectedIndex
+        if idx <= 0:
+            show_alert("Select a set in the 'Filter by V/S Set' dropdown first.", is_warning=True)
+            return
+
+        set_name = self.viewset_names[idx - 1]
+
         try:
             settings = load_settings()
             if "view_sets" in settings and set_name in settings["view_sets"]:
                 del settings["view_sets"][set_name]
                 save_settings(settings)
-                
-            show_alert("Successfully deleted set '{}'".format(set_name))
+            show_alert("Set '{}' deleted.".format(set_name))
             self.load_viewsets()
         except Exception as ex:
             show_alert("Failed to delete set:\n" + str(ex), is_error=True)
@@ -1106,14 +1206,17 @@ class ExportManagerForm(forms.WPFWindow):
         
     # Tab 1: Selection Logic
     def update_selection_stats(self):
-        selected_count = sum(1 for sv in self.sheets if sv.IsSelected)
-        total_count = len(self.sheets)
-        self.StatusTextBlock.Text = "{} sheets selected. Total: {}".format(selected_count, total_count)
+        items = getattr(self, "current_items", self.sheets)
+        selected_count = sum(1 for sv in items if sv.IsSelected)
+        total_count = len(items)
+        label = "views" if getattr(self, "RbViews", None) and self.RbViews.IsChecked else "sheets"
+        self.StatusTextBlock.Text = "{} {} selected. Total: {}".format(selected_count, label, total_count)
         
     def filter_sheets(self):
         search_text = self.TxtSearch.Text.lower().strip()
+        items = getattr(self, "current_items", self.sheets)
         filtered = []
-        for sv in self.sheets:
+        for sv in items:
             if not search_text or (search_text in sv.SheetNumber.lower() or search_text in sv.SheetName.lower()):
                 filtered.append(sv)
         self.GridSheets.ItemsSource = filtered
@@ -1144,8 +1247,10 @@ class ExportManagerForm(forms.WPFWindow):
             save_settings(settings)
             self.active_scheme_parts = settings["schemes"].get(active, [])
             
-            # Recalculate naming previews for all sheets
+            # Recalculate naming previews for all sheets and views
             for sv in self.sheets:
+                sv.update_filename(self.active_scheme_parts, doc)
+            for sv in self.views:
                 sv.update_filename(self.active_scheme_parts, doc)
             self.GridSheets.Items.Refresh()
 
@@ -1542,12 +1647,18 @@ def main():
                .WhereElementIsNotElementType()\
                .ToElements()
                
-    if not sheets:
-        show_alert("No Sheets found in the current project.", is_warning=True)
+    views_collector = DB.FilteredElementCollector(doc)\
+                        .OfCategory(DB.BuiltInCategory.OST_Views)\
+                        .WhereElementIsNotElementType()\
+                        .ToElements()
+    views = [v for v in views_collector if not v.IsTemplate and v.CanBePrinted]
+               
+    if not sheets and not views:
+        show_alert("No Sheets or Views found in the current project.", is_warning=True)
         return
         
     xaml_path = os.path.join(os.path.dirname(__file__), "ExportUI.xaml")
-    form = ExportManagerForm(xaml_path, sheets)
+    form = ExportManagerForm(xaml_path, sheets, views)
     form.ShowDialog()
 
 if __name__ == '__main__':
