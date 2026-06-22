@@ -1206,11 +1206,34 @@ class ExportManagerForm(forms.WPFWindow):
                     xml_string += '  <Name>{}</Name>\n'.format(active)
                     xml_string += '  <NamingRules>\n'
                     for part in scheme:
-                        xml_string += '    <Rule Type="{}" Value="{}" />\n'.format(part["type"], part["value"].replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;'))
+                        param_name = part.get("ParameterName", "")
+                        prefix = part.get("Prefix", "")
+                        suffix = part.get("Suffix", "")
+                        separator = part.get("Separator", "")
+                        
+                        def xml_escape(val):
+                            if not val:
+                                return ""
+                            # Ensure it is converted to string safely
+                            if isinstance(val, unicode):
+                                val = val.encode("utf-8")
+                            val_str = str(val)
+                            return val_str.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&apos;')
+                        
+                        xml_string += '    <Rule ParameterName="{}" Prefix="{}" Suffix="{}" Separator="{}" />\n'.format(
+                            xml_escape(param_name),
+                            xml_escape(prefix),
+                            xml_escape(suffix),
+                            xml_escape(separator)
+                        )
                     xml_string += '  </NamingRules>\n</Profile>'
                     
-                    with open(save_path, "w") as f:
-                        f.write(xml_string)
+                    import codecs
+                    with codecs.open(save_path, "w", encoding="utf-8") as f:
+                        u_xml = xml_string
+                        if isinstance(u_xml, str):
+                            u_xml = u_xml.decode("utf-8", "ignore")
+                        f.write(u_xml)
                     
                     forms.alert("Profile successfully exported to XML!", title="Export Manager")
             except Exception as ex:
@@ -1219,6 +1242,80 @@ class ExportManagerForm(forms.WPFWindow):
         elif res == "Save":
             # Saving internally is actually automatic when editing, but we can show a confirmation
             forms.alert("Profile saved successfully.", title="Export Manager")
+
+    def BtnImportProfile_Click(self, sender, e):
+        try:
+            from Microsoft.Win32 import OpenFileDialog
+            dlg = OpenFileDialog()
+            dlg.Filter = "XML Files (*.xml)|*.xml|All Files (*.*)|*.*"
+            dlg.DefaultExt = ".xml"
+            
+            if dlg.ShowDialog() == True:
+                xml_path = dlg.FileName
+                
+                from System.Xml import XmlDocument
+                xdoc = XmlDocument()
+                xdoc.Load(xml_path)
+                
+                name_node = xdoc.SelectSingleNode("//Name")
+                if not name_node:
+                    show_alert("Invalid profile XML: Missing Name element.", is_error=True)
+                    return
+                profile_name = name_node.InnerText.strip()
+                if not profile_name:
+                    show_alert("Invalid profile XML: Profile Name is empty.", is_error=True)
+                    return
+                
+                rules_node = xdoc.SelectSingleNode("//NamingRules")
+                if not rules_node:
+                    show_alert("Invalid profile XML: Missing NamingRules element.", is_error=True)
+                    return
+                
+                imported_rules = []
+                rule_nodes = rules_node.SelectNodes("Rule")
+                for node in rule_nodes:
+                    param_name = node.GetAttribute("ParameterName") or node.GetAttribute("Value")
+                    prefix = node.GetAttribute("Prefix")
+                    suffix = node.GetAttribute("Suffix")
+                    separator = node.GetAttribute("Separator")
+                    
+                    if param_name:
+                        imported_rules.append({
+                            "ParameterName": param_name,
+                            "Prefix": prefix or "",
+                            "Suffix": suffix or "",
+                            "Separator": separator or ""
+                        })
+                
+                if not imported_rules:
+                    show_alert("No valid naming rules found in the XML file.", is_error=True)
+                    return
+                
+                settings = load_settings()
+                
+                if profile_name in settings["schemes"]:
+                    from pyrevit import forms as prforms
+                    overwrite = prforms.alert(
+                        "Profile '{}' already exists. Do you want to overwrite it?".format(profile_name),
+                        yes=True, no=True
+                    )
+                    if not overwrite:
+                        base_name = profile_name
+                        counter = 1
+                        while "{}_{}".format(base_name, counter) in settings["schemes"]:
+                            counter += 1
+                        profile_name = "{}_{}".format(base_name, counter)
+                
+                settings["schemes"][profile_name] = imported_rules
+                settings["active_scheme"] = profile_name
+                save_settings(settings)
+                
+                self.reload_schemes()
+                self.CmbProfile_SelectionChanged(None, None)
+                
+                show_alert("Profile '{}' successfully imported!".format(profile_name))
+        except Exception as ex:
+            show_alert("Error importing XML: " + str(ex), is_error=True)
 
     # Tab 3: Create Logic
     def BtnBrowse_Click(self, sender, e):

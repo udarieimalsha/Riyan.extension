@@ -407,6 +407,7 @@
                 <ComboBox x:Name="CmbProfile" Style="{StaticResource DarkComboBox}" Width="150" Margin="0,0,8,0" SelectionChanged="CmbProfile_SelectionChanged"/>
                 <Button x:Name="BtnAddProfile" Content="+" Style="{StaticResource SecondaryBtn}" Width="26" Height="26" Margin="0,0,4,0" Click="BtnAddProfile_Click" ToolTip="New Profile"/>
                 <Button x:Name="BtnSaveProfile" Content="💾" Style="{StaticResource SecondaryBtn}" Width="26" Height="26" Margin="0,0,4,0" Click="BtnSaveProfile_Click" ToolTip="Save/Edit Profile"/>
+                <Button x:Name="BtnImportProfile" Content="📂" Style="{StaticResource SecondaryBtn}" Width="26" Height="26" Margin="0,0,4,0" Click="BtnImportProfile_Click" ToolTip="Import Profile from XML"/>
                 <Button x:Name="BtnDeleteProfile" Content="🗑" Style="{StaticResource SecondaryBtn}" Width="26" Height="26" Click="BtnDeleteProfile_Click" ToolTip="Delete Profile"/>
             </StackPanel>
 
