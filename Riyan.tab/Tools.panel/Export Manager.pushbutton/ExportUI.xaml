@@ -419,8 +419,8 @@
                     <Grid Margin="24,16,24,16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/> <!-- Row 0: Radios & Search -->
-                            <RowDefinition Height="Auto"/> <!-- Row 1: File Naming Scheme Area -->
-                            <RowDefinition Height="*"/>    <!-- Row 2: Sheet DataGrid -->
+                            <RowDefinition Height="*"/>    <!-- Row 1: Sheet DataGrid -->
+                            <RowDefinition Height="Auto"/> <!-- Row 2: Bottom Selection Info -->
                         </Grid.RowDefinitions>
 
                         <!-- Row 0: Radios & Search -->
