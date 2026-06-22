@@ -1235,13 +1235,13 @@ class ExportManagerForm(forms.WPFWindow):
                             u_xml = u_xml.decode("utf-8", "ignore")
                         f.write(u_xml)
                     
-                    forms.alert("Profile successfully exported to XML!", title="Export Manager")
+                    show_alert("Profile successfully exported to XML!")
             except Exception as ex:
-                forms.alert("Error saving XML: " + str(ex), title="Export Manager")
+                show_alert("Error saving XML: " + str(ex), is_error=True)
                 
         elif res == "Save":
             # Saving internally is actually automatic when editing, but we can show a confirmation
-            forms.alert("Profile saved successfully.", title="Export Manager")
+            show_alert("Profile saved successfully.")
 
     def BtnImportProfile_Click(self, sender, e):
         try:
