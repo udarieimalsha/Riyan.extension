@@ -1002,6 +1002,13 @@ class ExportManagerForm(forms.WPFWindow):
         
         # Select first tab by default
         self.MainTabControl.SelectedIndex = 0
+        
+        # Load split by format setting
+        split_by_format = settings.get("split_by_format", False)
+        if split_by_format:
+            self.RbSplitByFormat.IsChecked = True
+        else:
+            self.RbSaveSameFolder.IsChecked = True
 
     def reload_schemes(self):
         settings = load_settings()
@@ -1424,6 +1431,14 @@ class ExportManagerForm(forms.WPFWindow):
         revit_version = int(__revit__.Application.VersionNumber)
         total = len(self.queue_items)
         
+        # Save split_by_format setting
+        try:
+            settings = load_settings()
+            settings["split_by_format"] = self.RbSplitByFormat.IsChecked
+            save_settings(settings)
+        except Exception:
+            pass
+
         try:
             for idx, item in enumerate(self.queue_items):
                 item.Status = "Exporting..."
@@ -1433,15 +1448,27 @@ class ExportManagerForm(forms.WPFWindow):
                 success = False
                 err_msg = ""
                 
+                # Determine target folder based on split option
+                target_folder = folder
+                if self.RbSplitByFormat.IsChecked:
+                    target_folder = os.path.join(folder, item.Format)
+                    try:
+                        if not os.path.exists(target_folder):
+                            os.makedirs(target_folder)
+                    except Exception as ex:
+                        item.Status = "Error"
+                        show_alert("Failed to create format subfolder: " + str(ex), is_error=True)
+                        continue
+                
                 try:
                     if item.Format == "PDF":
                         if revit_version >= 2022:
-                            success = export_pdf_2022(folder, item.SheetVM.Sheet, item.TargetFileName, selected_pdf_setting)
+                            success = export_pdf_2022(target_folder, item.SheetVM.Sheet, item.TargetFileName, selected_pdf_setting)
                         else:
                             success = False
                             err_msg = "PDF requires Revit 2022+"
                     elif item.Format == "DWG":
-                        export_dwg(folder, item.SheetVM.Sheet, item.TargetFileName, selected_dwg_setting)
+                        export_dwg(target_folder, item.SheetVM.Sheet, item.TargetFileName, selected_dwg_setting)
                         success = True
                 except Exception as ex:
                     import traceback

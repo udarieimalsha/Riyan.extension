@@ -657,9 +657,10 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" Text="EXPORT DIRECTORY" Foreground="#555555" FontSize="9" FontWeight="Bold" Margin="0,0,0,8"/>
-                            <Grid Grid.Row="1">
+                            <Grid Grid.Row="1" Margin="0,0,0,8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="50"/>
@@ -668,6 +669,13 @@
                                          Padding="8,6" FontSize="11" Margin="0,0,8,0" IsReadOnly="True" VerticalContentAlignment="Center"/>
                                 <Button x:Name="BtnBrowse" Grid.Column="1" Content="..." Style="{StaticResource SecondaryBtn}" Width="42" Height="28" Click="BtnBrowse_Click"/>
                             </Grid>
+                            
+                            <!-- Export Rules (Split Options) -->
+                            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,4,0,0">
+                                <TextBlock Text="EXPORT RULES:" Foreground="#555555" FontSize="9" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                                <RadioButton x:Name="RbSaveSameFolder" Content="Save all files in the same folder location" Style="{StaticResource DarkRadio}" GroupName="ExportRules" IsChecked="True" Margin="0,0,24,0"/>
+                                <RadioButton x:Name="RbSplitByFormat" Content="Save and split files by file format" Style="{StaticResource DarkRadio}" GroupName="ExportRules"/>
+                            </StackPanel>
                         </Grid>
 
                         <!-- Export Queue Grid -->
