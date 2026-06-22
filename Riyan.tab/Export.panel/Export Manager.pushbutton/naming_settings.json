@@ -1,0 +1,95 @@
+{
+    "view_sets": {
+        "uhbggyg": [
+            "00-000-000-02", 
+            "00-000-000-03", 
+            "05-100-L00-01", 
+            "05-100-L01-01"
+        ], 
+        "1811544": [
+            "16-600-000-01", 
+            "19-400-000-01", 
+            "20-400-000-01", 
+            "21-100-L00-01", 
+            "21-100-L01-01", 
+            "23-100-L00-01", 
+            "23-100-L01-01"
+        ], 
+        "1.1.1.": [
+            "00-000-000-00", 
+            "00-000-000-01", 
+            "00-000-000-02"
+        ], 
+        "...........................": [
+            "00-000-000-02", 
+            "00-000-000-03", 
+            "05-100-L01-01", 
+            "10-100-L00-01", 
+            "10-100-L01-01", 
+            "10-500-000-01", 
+            "11-100-L00-01", 
+            "16-600-000-01", 
+            "19-400-000-01", 
+            "19-400-000-02", 
+            "20-400-000-01"
+        ]
+    }, 
+    "schemes": {
+        "Default": [
+            {
+                "Suffix": "", 
+                "ParameterName": "Sheet Number", 
+                "Separator": " - ", 
+                "Prefix": ""
+            }, 
+            {
+                "Suffix": "", 
+                "ParameterName": "Sheet Name", 
+                "Separator": "", 
+                "Prefix": ""
+            }
+        ], 
+        "gvbtbt": [], 
+        "BOBO": [
+            {
+                "Suffix": "", 
+                "ParameterName": "RYN_PrInfo_ProjectNumber", 
+                "Separator": "-RYN-", 
+                "Prefix": ""
+            }, 
+            {
+                "Suffix": "", 
+                "ParameterName": "RYN_PrInfo_BuildingNumber", 
+                "Separator": "-", 
+                "Prefix": ""
+            }, 
+            {
+                "Suffix": "", 
+                "ParameterName": "Discipline", 
+                "Separator": "-DWG-", 
+                "Prefix": ""
+            }, 
+            {
+                "Suffix": "", 
+                "ParameterName": "Sheet Number", 
+                "Separator": " - ", 
+                "Prefix": ""
+            }, 
+            {
+                "Suffix": "", 
+                "ParameterName": "Current Revision", 
+                "Separator": "", 
+                "Prefix": ""
+            }
+        ], 
+        "bobo": []
+    }, 
+    "split_by_format": true, 
+    "export_options": {
+        "reveal_constraints_off": true, 
+        "reveal_hidden_off": true, 
+        "worksharing_off": true, 
+        "temp_hide_off": true
+    }, 
+    "active_scheme": "BOBO"
+}

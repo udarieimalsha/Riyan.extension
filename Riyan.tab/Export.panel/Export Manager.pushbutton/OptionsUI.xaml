@@ -1,0 +1,132 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Export Options" Height="500" Width="700"
+        WindowStartupLocation="CenterOwner" WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <!-- Dark Theme Resources -->
+        <SolidColorBrush x:Key="BgDark" Color="#1E1E1E"/>
+        <SolidColorBrush x:Key="BgMedium" Color="#252526"/>
+        <SolidColorBrush x:Key="BgLight" Color="#2D2D30"/>
+        <SolidColorBrush x:Key="TextMain" Color="#E5E5E5"/>
+        <SolidColorBrush x:Key="TextDim" Color="#A0A0A0"/>
+        <SolidColorBrush x:Key="AccentColor" Color="#C8922A"/>
+        
+        <!-- Button Styles -->
+        <Style x:Key="PrimaryBtn" TargetType="Button">
+            <Setter Property="Background" Value="#C8922A"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#DDA235"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryBtn" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#E5E5E5"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#444444"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333333"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- RadioButton Style -->
+        <Style TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{StaticResource TextMain}"/>
+            <Setter Property="Margin" Value="0,4,0,4"/>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="{StaticResource BgDark}" CornerRadius="8" BorderBrush="#333333" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title Bar -->
+            <Grid Grid.Row="0" Background="#181818" MouseDown="TitleBar_MouseDown">
+                <TextBlock Text="Export Options" Foreground="{StaticResource AccentColor}" VerticalAlignment="Center" Margin="15,0" FontWeight="SemiBold"/>
+                <Button x:Name="CloseBtn" Content="✕" Width="40" Background="Transparent" Foreground="#888" BorderThickness="0" HorizontalAlignment="Right" Click="CloseBtn_Click" Cursor="Hand"/>
+            </Grid>
+
+            <!-- Content Area -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="15,10,15,10">
+                <StackPanel>
+                    <!-- Temporary Hide/Isolate -->
+                    <TextBlock Text="Temporary Hide/Isolate" Foreground="{StaticResource TextDim}" Margin="0,10,0,5" FontWeight="Bold"/>
+                    <Border Background="{StaticResource BgMedium}" CornerRadius="4" Padding="10">
+                        <StackPanel>
+                            <RadioButton x:Name="RbTempHideOff" Content="Turn off the Temporary Hide/Isolate mode before printing" IsChecked="True"/>
+                            <RadioButton x:Name="RbTempHideLeave" Content="Leave the Temporary Hide/Isolate mode and print"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Worksharing Display -->
+                    <TextBlock Text="Worksharing Display" Foreground="{StaticResource TextDim}" Margin="0,15,0,5" FontWeight="Bold"/>
+                    <Border Background="{StaticResource BgMedium}" CornerRadius="4" Padding="10">
+                        <StackPanel>
+                            <RadioButton x:Name="RbWorksharingOff" Content="Turn off the Worksharing Display mode before printing" IsChecked="True"/>
+                            <RadioButton x:Name="RbWorksharingLeave" Content="Leave the Worksharing Display mode on and print"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Reveal Hidden Elements -->
+                    <TextBlock Text="Reveal Hidden Elements" Foreground="{StaticResource TextDim}" Margin="0,15,0,5" FontWeight="Bold"/>
+                    <Border Background="{StaticResource BgMedium}" CornerRadius="4" Padding="10">
+                        <StackPanel>
+                            <RadioButton x:Name="RbRevealHiddenOff" Content="Turn off the Reveal Hidden Elements mode before printing" IsChecked="True"/>
+                            <RadioButton x:Name="RbRevealHiddenLeave" Content="Leave the Reveal Hidden Elements mode on and print"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Reveal Constraints -->
+                    <TextBlock Text="Reveal Constraints" Foreground="{StaticResource TextDim}" Margin="0,15,0,5" FontWeight="Bold"/>
+                    <Border Background="{StaticResource BgMedium}" CornerRadius="4" Padding="10">
+                        <StackPanel>
+                            <RadioButton x:Name="RbRevealConstraintsOff" Content="Turn off the Reveal Constraints mode before printing" IsChecked="True"/>
+                            <RadioButton x:Name="RbRevealConstraintsLeave" Content="Leave the Reveal Constraints mode on and print"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Background="#181818" BorderBrush="#333333" BorderThickness="0,1,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
+                    <Button x:Name="BtnCancel" Content="Cancel" Style="{StaticResource SecondaryBtn}" Width="80" Height="30" Margin="0,0,10,0" Click="BtnCancel_Click"/>
+                    <Button x:Name="BtnSave" Content="Save" Style="{StaticResource PrimaryBtn}" Width="80" Height="30" Click="BtnSave_Click"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
