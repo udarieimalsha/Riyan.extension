@@ -68,8 +68,8 @@ class CustomAlertWindow(object):
             <!-- Content Area -->
             <Grid Grid.Row="1" Margin="20,16,20,16">
                 <Grid.ColumnDefinitions>
-                    <Grid.ColumnDefinition Width="Auto"/>
-                    <Grid.ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 
                 <TextBlock x:Name="TxtIcon" Grid.Column="0" Text="" Foreground="#802F2D" FontSize="26" 
@@ -154,7 +154,7 @@ def show_alert(message, title="Export Manager", is_error=False, is_warning=False
         dialog = CustomAlertWindow(message, title, icon_char)
         dialog.ShowDialog()
     except Exception as e:
-        forms.alert(message, title=title)
+        forms.alert("Error rendering dark UI: " + str(e) + "\n\nOriginal message: " + message, title=title)
 
 # ------------------------------------------------------------------------------
 # Custom Dark Text Input Dialog
