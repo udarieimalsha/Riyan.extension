@@ -1,0 +1,78 @@
+{
+    "view_sets": {
+        "jyukyky": [
+            "05-100-L00-01", 
+            "05-100-L01-01"
+        ], 
+        "nyhnytnyt": [
+            "00-000-000-03", 
+            "05-100-L00-01", 
+            "05-100-L01-01"
+        ], 
+        "lplplplplp": [
+            "00-000-000-03", 
+            "05-100-L00-01", 
+            "05-100-L01-01"
+        ], 
+        "vgergetgtg": [
+            "00-000-000-02", 
+            "00-000-000-03", 
+            "05-100-L00-01"
+        ], 
+        "gd": [
+            "00-000-000-01", 
+            "00-000-000-02", 
+            "00-000-000-03", 
+            "05-100-L00-01"
+        ]
+    }, 
+    "active_scheme": "BOBO", 
+    "schemes": {
+        "Default": [
+            {
+                "ParameterName": "Sheet Number", 
+                "Prefix": "", 
+                "Suffix": "", 
+                "Separator": " - "
+            }, 
+            {
+                "ParameterName": "Sheet Name", 
+                "Prefix": "", 
+                "Suffix": "", 
+                "Separator": ""
+            }
+        ], 
+        "BOBO": [
+            {
+                "ParameterName": "RYN_PrInfo_ProjectNumber", 
+                "Prefix": "", 
+                "Suffix": "", 
+                "Separator": "-RYN-"
+            }, 
+            {
+                "ParameterName": "RYN_PrInfo_BuildingNumber", 
+                "Prefix": "", 
+                "Suffix": "", 
+                "Separator": "-"
+            }, 
+            {
+                "ParameterName": "Discipline", 
+                "Prefix": "", 
+                "Suffix": "", 
+                "Separator": "-DWG-"
+            }, 
+            {
+                "ParameterName": "Sheet Number", 
+                "Prefix": "", 
+                "Suffix": "", 
+                "Separator": " - "
+            }, 
+            {
+                "ParameterName": "Current Revision", 
+                "Prefix": "", 
+                "Suffix": "", 
+                "Separator": ""
+            }
+        ]
+    }
+}
